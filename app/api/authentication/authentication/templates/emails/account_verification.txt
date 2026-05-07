@@ -1,0 +1,20 @@
+Digital Lockbox - Verify Your Account
+
+Hello {{ user.first_name|default:user.email }},
+
+Welcome to Digital Lockbox! To complete your account setup and start securely managing your passwords, please verify your email address.
+
+Verification Link:
+{{ verification_url }}
+
+This verification link will expire in 3 days. If you didn't create an account with Digital Lockbox, please ignore this email.
+
+Once verified, you'll be able to:
+- Securely store and manage your passwords
+- Generate strong, unique passwords  
+- Access your passwords from any device
+- Keep your digital life secure
+
+---
+This email was sent from Digital Lockbox Password Manager.
+If you have any questions, please contact our support team.

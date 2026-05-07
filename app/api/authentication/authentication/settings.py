@@ -57,7 +57,7 @@ ROOT_URLCONF = 'authentication.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'authentication' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -149,3 +149,12 @@ SESSION_COOKIE_AGE = 1209600
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'  # Use 'Strict' in production
+
+# Email settings
+EMAIL_BACKEND = config.EMAIL_BACKEND
+EMAIL_HOST = config.EMAIL_HOST
+EMAIL_PORT = config.EMAIL_PORT
+EMAIL_USE_TLS = config.EMAIL_USE_TLS
+EMAIL_HOST_USER = config.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
+DEFAULT_FROM_EMAIL = config.DEFAULT_FROM_EMAIL

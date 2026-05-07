@@ -1,11 +1,12 @@
 from ninja import Router
 from ninja.security import HttpBearer
 from ninja.errors import HttpError
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.db import transaction
 from django.conf import settings
+from django.template.loader import render_to_string
 import jwt
 import uuid
 import datetime
@@ -20,6 +21,7 @@ from .schemas import (
     PasswordChangeIn, PasswordResetRequestIn, PasswordResetConfirmIn,
     EmailVerificationIn, SessionListOut, ErrorOut, MessageOut
 )
+from .email_service import EmailService
 
 auth_router = Router(tags=["Authentication"])
 
@@ -215,14 +217,14 @@ def register_user(request: HttpRequest, data: UserIn):
 
     # Create verification token
     expiry = timezone.now() + datetime.timedelta(days=3)
-    _ = Token.objects.create(
+    verification_token = Token.objects.create(
         user=user,
         token_type='verification',
         expires_at=expiry
     )
 
-    # Send verification email (implement your email sending logic here)
-    # send_verification_email(user.email, verification_token.token)
+    # Send verification email
+    EmailService.send_verification_email(user, verification_token)
 
     return 201, user
 
@@ -433,14 +435,14 @@ def request_password_reset(request: HttpRequest, data: PasswordResetRequestIn):
 
     # Create password reset token
     expiry = timezone.now() + datetime.timedelta(hours=24)
-    _ = Token.objects.create(
+    reset_token = Token.objects.create(
         user=user,
         token_type='password_reset',
         expires_at=expiry
     )
 
-    # Send password reset email (implement your email sending logic here)
-    # send_password_reset_email(user.email, reset_token.token)
+    # Send password reset email
+    EmailService.send_password_reset_email(user, reset_token)
 
     return {"message": "If your email is registered, you will receive a password reset link"}
 
@@ -483,9 +485,9 @@ def confirm_password_reset(request: HttpRequest, data: PasswordResetConfirmIn):
         raise HttpError(400, "Invalid or expired token")
 
 
-# Endpoint for email verification
+# Endpoint for email verification (POST)
 @auth_router.post("/verify-email", response={200: MessageOut, 400: ErrorOut})
-def verify_email(request: HttpRequest, data: EmailVerificationIn):
+def verify_email_post(request: HttpRequest, data: EmailVerificationIn):
     try:
         # Find token
         token = Token.objects.get(
@@ -505,9 +507,94 @@ def verify_email(request: HttpRequest, data: EmailVerificationIn):
         token.is_used = True
         token.save()
 
+        # Send welcome email
+        EmailService.send_welcome_email(user)
+
         return {"message": "Email verification successful"}
     except Token.DoesNotExist:
         raise HttpError(400, "Invalid or expired token")
+
+
+# Endpoint for email verification (GET) - for direct browser links
+@auth_router.get("/verify-email/{token}")
+def verify_email_get(request: HttpRequest, token: str):
+    try:
+        # Find token
+        verification_token = Token.objects.get(
+            token=token,
+            token_type='verification',
+            is_used=False,
+            expires_at__gt=timezone.now()
+        )
+
+        user = verification_token.user
+
+        # Mark user as verified
+        user.is_verified = True
+        user.save()
+
+        # Mark token as used
+        verification_token.is_used = True
+        verification_token.save()
+
+        # Send welcome email
+        EmailService.send_welcome_email(user)
+
+        # Return success HTML page
+        html_content = render_to_string('verification_success.html')
+        return HttpResponse(html_content, content_type='text/html')
+        
+    except Token.DoesNotExist:
+        # Return error HTML page
+        html_content = render_to_string('verification_error.html')
+        return HttpResponse(html_content, content_type='text/html')
+
+
+# Endpoint for resending verification email
+@auth_router.post("/resend-verification", response={200: MessageOut, 400: ErrorOut}, auth=auth_jwt)
+def resend_verification_email(request: HttpRequest):
+    user = get_user_from_auth(request.auth)
+    
+    # Check if user is already verified
+    if user.is_verified:
+        return {"message": "Your account is already verified"}
+    
+    # Check if there's already a valid verification token
+    existing_token = Token.objects.filter(
+        user=user,
+        token_type='verification',
+        is_used=False,
+        expires_at__gt=timezone.now()
+    ).first()
+    
+    if existing_token:
+        # Resend email with existing token
+        EmailService.send_verification_email(user, existing_token)
+    else:
+        # Create new verification token
+        expiry = timezone.now() + datetime.timedelta(days=3)
+        new_token = Token.objects.create(
+            user=user,
+            token_type='verification',
+            expires_at=expiry
+        )
+        
+        # Send verification email
+        EmailService.send_verification_email(user, new_token)
+    
+    return {"message": "Verification email sent successfully"}
+
+
+# Endpoint for checking verification status
+@auth_router.get("/verification-status", response={200: dict, 401: ErrorOut}, auth=auth_jwt)
+def get_verification_status(request: HttpRequest):
+    user = get_user_from_auth(request.auth)
+    
+    return {
+        "is_verified": user.is_verified,
+        "email": user.email,
+        "user_id": str(user.id)
+    }
 
 
 # Endpoint for getting user profile
