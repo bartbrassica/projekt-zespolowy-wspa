@@ -17,7 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   }
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Password Manager', href: '/passwords', icon: Home },
     { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
@@ -30,7 +30,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex">
               {/* Logo */}
               <div className="flex-shrink-0 flex items-center">
-                <Link to="/dashboard" className="flex items-center">
+                <Link to="/passwords" className="flex items-center">
                   <Shield className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
                   <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
                     Digital Lockbox

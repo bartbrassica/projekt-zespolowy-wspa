@@ -3,8 +3,8 @@ import { useAuth } from './store/auth'
 import LandingPage from './LandingPage'
 import Login from './Login'
 import Register from './Register'
-import Dashboard from './Dashboard'
 import Layout from './Layout'
+import PasswordManager from './PasswordManager'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -38,33 +38,33 @@ function App() {
       <Route 
         path="/login" 
         element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
+          isAuthenticated ? <Navigate to="/passwords" replace /> : <Login />
         } 
       />
       <Route 
         path="/register" 
         element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />
+          isAuthenticated ? <Navigate to="/passwords" replace /> : <Register />
         } 
       />
       <Route 
         path="/signup" 
         element={<Navigate to="/register" replace />} 
       />
-
-      {/* Protected routes with layout */}
+      
+      {/* Password Manager Route */}
       <Route
-        path="/dashboard"
+        path="/passwords"
         element={
           <ProtectedRoute>
             <Layout>
-              <Dashboard />
+              <PasswordManager />
             </Layout>
           </ProtectedRoute>
         }
       />
       
-      {/* Add more protected routes here */}
+      {/* Settings route */}
       <Route
         path="/settings"
         element={

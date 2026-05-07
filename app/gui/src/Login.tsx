@@ -25,7 +25,7 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     try {
       await login(email, password, rememberMe);
       onSuccess?.();
-      navigate('/dashboard');
+      navigate('/passwords');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
     } finally {
@@ -63,8 +63,7 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
                 Sign in to your account
               </h2>
               <p className="mt-2 text-center text-sm text-gray-400">
-                Welcome back to Digital Lockbox
-              </p>
+            </p>
             </div>
             
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
