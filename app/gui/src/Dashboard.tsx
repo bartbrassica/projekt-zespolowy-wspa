@@ -10,14 +10,14 @@ const Dashboard: React.FC = () => {
   ]
 
   return (
-    <div className="px-4 sm:px-0">
+    <div className="w-full px-4 sm:px-6 lg:px-8">
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
       <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
         Welcome to your secure digital lockbox. Your data is encrypted and protected.
       </p>
 
       {/* Stats Grid */}
-      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 px-4 sm:px-6 lg:px-8">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (

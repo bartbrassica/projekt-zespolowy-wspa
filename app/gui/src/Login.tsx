@@ -55,8 +55,8 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
         </div>
       </nav>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-20">
+        <div className="w-full max-w-md px-4 sm:px-6 lg:px-8">
           <div className="bg-gray-900 bg-opacity-50 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 shadow-2xl">
             <div>
               <h2 className="mt-6 text-center text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
