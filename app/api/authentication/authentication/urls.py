@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
 from .endpoints import auth_router
+from .password_endpoints import password_router
 
 
 api = NinjaAPI(
@@ -27,6 +28,7 @@ api = NinjaAPI(
 )
 
 api.add_router("", auth_router)
+api.add_router("/passwords", password_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

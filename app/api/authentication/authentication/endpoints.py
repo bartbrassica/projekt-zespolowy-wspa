@@ -115,6 +115,35 @@ class JWTAuth(HttpBearer):
 
 auth_jwt = JWTAuth()
 
+
+
+
+# Helper function to verify master password
+def verify_master_password(user, master_password: str) -> bool:
+    """Verify user's master password"""
+    return user.check_password(master_password)
+
+
+# Helper function to get user from auth
+def get_user_from_auth(auth):
+    """Get User object from auth parameter"""
+    if not auth:
+        raise HttpError(401, "Authentication required")
+    
+    # If auth is already a User object, return it
+    if hasattr(auth, 'check_password'):
+        return auth
+    
+    # If auth is a string ID, fetch the user
+    if isinstance(auth, str):
+        try:
+            return User.objects.get(id=auth)
+        except User.DoesNotExist:
+            raise HttpError(401, "Invalid authentication")
+    
+    raise HttpError(401, "Invalid authentication")
+
+
 # Generate JWT tokens
 def create_tokens(user: User) -> dict:
     # Load private key for signing
@@ -316,10 +345,10 @@ def refresh_token(request: HttpRequest, data: RefreshTokenIn):
 
 # Endpoint for logout
 @auth_router.post("/logout", response={200: MessageOut}, auth=auth_jwt)
-def logout_user(request: HttpRequest, auth):
+def logout_user(request: HttpRequest):
     # Revoke refresh tokens
     Token.objects.filter(
-        user=auth,
+        user=get_user_from_auth(request.auth),
         token_type='refresh',
         is_used=False,
         expires_at__gt=timezone.now()
@@ -333,41 +362,43 @@ def logout_user(request: HttpRequest, auth):
 
 # Protected endpoint to get current user
 @auth_router.get("/me", response={200: UserOut, 401: ErrorOut}, auth=auth_jwt)
-def get_current_user(request: HttpRequest, auth):
-    if not auth:
+def get_current_user(request: HttpRequest):
+    if not request.auth:
         raise HttpError(401, "Authentication required")
 
-    return auth
+    return get_user_from_auth(request.auth)
 
 
 # Protected endpoint to update user profile
 @auth_router.put("/me", response={200: UserOut, 401: ErrorOut}, auth=auth_jwt)
-def update_user(request: HttpRequest, data: UserUpdate, auth):
+def update_user(request: HttpRequest, data: UserUpdate):
+    user = get_user_from_auth(request.auth)
     if data.first_name is not None:
-        auth.first_name = data.first_name
+        user.first_name = data.first_name
 
     if data.last_name is not None:
-        auth.last_name = data.last_name
+        user.last_name = data.last_name
 
     if data.username is not None:
         # Check if username already exists
-        if User.objects.filter(username=data.username).exclude(id=auth.id).exists():
+        if User.objects.filter(username=data.username).exclude(id=user.id).exists():
             raise HttpError(400, "Username already exists")
-        auth.username = data.username
+        user.username = data.username
 
-    auth.save()
+    user.save()
 
-    return auth
+    return user
 
 
 # Endpoint for password change
 @auth_router.post("/password/change", response={200: MessageOut, 400: ErrorOut, 401: ErrorOut}, auth=auth_jwt)
-def change_password(request: HttpRequest, data: PasswordChangeIn, auth):
-    if not auth:
+def change_password(request: HttpRequest, data: PasswordChangeIn):
+    user = get_user_from_auth(request.auth)
+    if not user:
         raise HttpError(401, "Authentication required")
 
     # Check current password
-    if not auth.check_password(data.current_password):
+    if not user.check_password(data.current_password):
         raise HttpError(400, "Current password is incorrect")
 
     # Check if new password matches confirmation
@@ -375,18 +406,18 @@ def change_password(request: HttpRequest, data: PasswordChangeIn, auth):
         raise HttpError(400, "Passwords do not match")
 
     # Update password
-    auth.set_password(data.new_password)
-    auth.save()
+    user.set_password(data.new_password)
+    user.save()
 
     # Save password history
     from .models import PasswordHistory
     PasswordHistory.objects.create(
-        user=auth,
-        password=auth.password  # Already hashed by set_password
+        user=user,
+        password=user.password  # Already hashed by set_password
     )
 
     # Log out all sessions
-    UserSession.objects.filter(user=auth).update(is_active=False)
+    UserSession.objects.filter(user=user).update(is_active=False)
 
     return {"message": "Password changed successfully"}
 
@@ -571,24 +602,25 @@ def verify_email(request: HttpRequest, data: EmailVerificationIn):
 
 # Endpoint for listing user sessions
 @auth_router.get("/sessions", response={200: SessionListOut, 401: ErrorOut}, auth=auth_jwt)
-def list_sessions(request: HttpRequest, auth):
-    if not auth:
+def list_sessions(request: HttpRequest):
+    user = get_user_from_auth(request.auth)
+    if not request.auth:
         raise HttpError(401, "Authentication required")
 
-    print(f'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA {auth}')
-    sessions = UserSession.objects.filter(user=auth, is_active=True)
+    sessions = UserSession.objects.filter(user=user, is_active=True)
 
     return {"sessions": sessions}
 
 
 # Endpoint for terminating a session
 @auth_router.delete("/sessions/{session_id}", response={200: MessageOut, 401: ErrorOut, 404: ErrorOut}, auth=auth_jwt)
-def terminate_session(request: HttpRequest, session_id: str, auth):
-    if not auth:
+def terminate_session(request: HttpRequest, session_id: str):
+    user = get_user_from_auth(request.auth)
+    if not user:
         raise HttpError(401, "Authentication required")
 
     try:
-        session = UserSession.objects.get(id=session_id, user=auth)
+        session = UserSession.objects.get(id=session_id, user=user)
         session.is_active = False
         session.save()
         

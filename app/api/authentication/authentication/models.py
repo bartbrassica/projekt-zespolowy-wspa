@@ -3,6 +3,14 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 import uuid
 from .services import UserManager
+from .password_manager_models import (
+    PasswordEntry,
+    PasswordFolder,
+    PasswordTag,
+    PasswordShareLink,
+    PasswordEntryHistory,
+    PasswordAccessLog
+)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
