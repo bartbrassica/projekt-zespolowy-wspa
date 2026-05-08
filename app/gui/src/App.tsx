@@ -3,6 +3,7 @@ import { useAuth } from './store/auth'
 import LandingPage from './LandingPage'
 import Login from './Login'
 import Register from './Register'
+import EmailVerification from './EmailVerification'  // Add this import
 import Layout from './Layout'
 import PasswordManager from './PasswordManager'
 
@@ -50,6 +51,12 @@ function App() {
       <Route 
         path="/signup" 
         element={<Navigate to="/register" replace />} 
+      />
+      
+      {/* Add email verification route */}
+      <Route 
+        path="/verify-email" 
+        element={<EmailVerification />} 
       />
       
       {/* Password Manager Route */}
