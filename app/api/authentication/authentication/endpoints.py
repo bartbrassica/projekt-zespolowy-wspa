@@ -229,7 +229,7 @@ def register_user(request: HttpRequest, data: UserIn):
     return 201, user
 
 
-# Endpoint for login
+# Updated login endpoint with email verification check
 @auth_router.post("/login", response={200: TokenOut, 400: ErrorOut, 401: ErrorOut})
 def login_user(request: HttpRequest, data: LoginIn):
     # Get user IP and user agent
@@ -257,6 +257,13 @@ def login_user(request: HttpRequest, data: LoginIn):
         login_attempt.save()
         raise HttpError(401, "User account is disabled")
 
+    # NEW: Check if user is verified
+    if not user.is_verified:
+        login_attempt.user = user
+        login_attempt.successful = False
+        login_attempt.save()
+        raise HttpError(401, "Please verify your email address before logging in")
+
     # Log successful login
     login_attempt.user = user
     login_attempt.successful = True
@@ -282,9 +289,6 @@ def login_user(request: HttpRequest, data: LoginIn):
         request.session.set_expiry(14 * 24 * 60 * 60)  # 14 days in seconds
     else:
         request.session.set_expiry(0)  # Browser session
-
-    # Log in user to Django session
-    login(request, user)
 
     return tokens
 

@@ -129,3 +129,27 @@ class UserPermissionOverride(models.Model):
     
     def __str__(self):
         return f"{self.permission_name} for {self.user.email}"
+
+
+class PasswordExpirationNotification(models.Model):
+    """Track sent password expiration notifications to avoid duplicates"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    password_entry = models.ForeignKey(PasswordEntry, on_delete=models.CASCADE, related_name='expiration_notifications')
+    notification_type = models.CharField(max_length=20, choices=[
+        ('3_days', '3 Days Before'),
+        ('1_day', '1 Day Before'),
+        ('expired', 'Expired'),
+    ])
+    sent_at = models.DateTimeField(auto_now_add=True)
+    email_sent_successfully = models.BooleanField(default=False)
+    
+    class Meta:
+        db_table = 'password_expiration_notifications'
+        unique_together = [['password_entry', 'notification_type']]
+        indexes = [
+            models.Index(fields=['password_entry', 'notification_type']),
+            models.Index(fields=['sent_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.notification_type} notification for {self.password_entry.name}"
