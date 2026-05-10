@@ -6,25 +6,60 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('authentication', '0003_passwordentry_passwordentryhistory_passwordfolder_and_more'),
+        (
+            "authentication",
+            "0003_passwordentry_passwordentryhistory_passwordfolder_and_more",
+        ),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PasswordExpirationNotification',
+            name="PasswordExpirationNotification",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('notification_type', models.CharField(choices=[('3_days', '3 Days Before'), ('1_day', '1 Day Before'), ('expired', 'Expired')], max_length=20)),
-                ('sent_at', models.DateTimeField(auto_now_add=True)),
-                ('email_sent_successfully', models.BooleanField(default=False)),
-                ('password_entry', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='expiration_notifications', to='authentication.passwordentry')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "notification_type",
+                    models.CharField(
+                        choices=[
+                            ("3_days", "3 Days Before"),
+                            ("1_day", "1 Day Before"),
+                            ("expired", "Expired"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("sent_at", models.DateTimeField(auto_now_add=True)),
+                ("email_sent_successfully", models.BooleanField(default=False)),
+                (
+                    "password_entry",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="expiration_notifications",
+                        to="authentication.passwordentry",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'password_expiration_notifications',
-                'indexes': [models.Index(fields=['password_entry', 'notification_type'], name='password_ex_passwor_5af792_idx'), models.Index(fields=['sent_at'], name='password_ex_sent_at_44e279_idx')],
-                'unique_together': {('password_entry', 'notification_type')},
+                "db_table": "password_expiration_notifications",
+                "indexes": [
+                    models.Index(
+                        fields=["password_entry", "notification_type"],
+                        name="password_ex_passwor_5af792_idx",
+                    ),
+                    models.Index(
+                        fields=["sent_at"], name="password_ex_sent_at_44e279_idx"
+                    ),
+                ],
+                "unique_together": {("password_entry", "notification_type")},
             },
         ),
     ]

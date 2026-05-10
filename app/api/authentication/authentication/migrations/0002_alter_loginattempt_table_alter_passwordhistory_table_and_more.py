@@ -4,34 +4,33 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('authentication', '0001_initial'),
+        ("authentication", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelTable(
-            name='loginattempt',
-            table='auth_login_attempt',
+            name="loginattempt",
+            table="auth_login_attempt",
         ),
         migrations.AlterModelTable(
-            name='passwordhistory',
-            table='auth_password_history',
+            name="passwordhistory",
+            table="auth_password_history",
         ),
         migrations.AlterModelTable(
-            name='token',
-            table='auth_token',
+            name="token",
+            table="auth_token",
         ),
         migrations.AlterModelTable(
-            name='user',
-            table='auth_user',
+            name="user",
+            table="auth_user",
         ),
         migrations.AlterModelTable(
-            name='userpermissionoverride',
-            table='auth_permission_override',
+            name="userpermissionoverride",
+            table="auth_permission_override",
         ),
         migrations.AlterModelTable(
-            name='usersession',
-            table='auth_user_session',
+            name="usersession",
+            table="auth_user_session",
         ),
     ]
