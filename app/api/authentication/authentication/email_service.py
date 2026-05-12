@@ -101,12 +101,14 @@ class EmailService:
 
         context = EmailService._create_email_context(user, reset_url=reset_url)
 
-        text_content = EmailMessages.PASSWORD_RESET_BODY.value.format(**context)
+        html_content = render_to_string('emails/password_reset.html', context)
+        text_content = render_to_string('emails/password_reset.txt', context)
 
         return EmailService._send_email(
             subject=EmailConstants.PASSWORD_RESET_SUBJECT.value,
             body=text_content,
             to_email=user.email,
+            html_content=html_content,
         )
 
     @staticmethod
