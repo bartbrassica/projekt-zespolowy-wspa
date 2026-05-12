@@ -1,36 +1,27 @@
-import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAuth } from './store/auth';
-import { useNavigate, Link } from 'react-router-dom';
-
-interface LoginProps {
-  onSuccess?: () => void;
-}
+import React from 'react';
+import { Mail, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useLoginForm } from './hooks/useLoginForm';
+import { useLogin } from './hooks/useLogin';
+import { InputField, ErrorMessage, LoadingButton, Checkbox } from './components/ui';
+import type { LoginProps } from './types/auth';
 
 const Login: React.FC<LoginProps> = ({ onSuccess }) => {
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const {
+    formData,
+    showPassword,
+    setShowPassword,
+    handleEmailChange,
+    handlePasswordChange,
+    handleRememberMeChange,
+    isFormValid
+  } = useLoginForm();
+
+  const { handleLogin, isLoading, error } = useLogin(onSuccess);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      await login(email, password, rememberMe);
-      onSuccess?.();
-      navigate('/passwords');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during login');
-    } finally {
-      setIsLoading(false);
-    }
+    await handleLogin(formData);
   };
 
   return (
@@ -68,91 +59,46 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
             
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
               <div className="rounded-md shadow-sm -space-y-px">
-                <div>
-                  <label htmlFor="email-address" className="sr-only">
-                    Email address
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="email-address"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="appearance-none rounded-none relative block w-full px-10 py-3 bg-black bg-opacity-50 border border-gray-700 placeholder-gray-500 text-white rounded-t-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                      placeholder="Email address"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label htmlFor="password" className="sr-only">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="password"
-                      name="password"
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete="current-password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="appearance-none rounded-none relative block w-full px-10 py-3 bg-black bg-opacity-50 border border-gray-700 placeholder-gray-500 text-white rounded-b-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                      placeholder="Password"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                      ) : (
-                        <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                      )}
-                    </button>
-                  </div>
-                </div>
+                <InputField
+                  id="email-address"
+                  name="email"
+                  type="email"
+                  placeholder="Email address"
+                  value={formData.email}
+                  onChange={handleEmailChange}
+                  required
+                  autoComplete="email"
+                  icon={<Mail className="h-5 w-5 text-gray-400" />}
+                  className="appearance-none rounded-none relative block w-full px-10 py-3 bg-black bg-opacity-50 border border-gray-700 placeholder-gray-500 text-white rounded-t-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                />
+
+                <InputField
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handlePasswordChange}
+                  required
+                  autoComplete="current-password"
+                  icon={<Lock className="h-5 w-5 text-gray-400" />}
+                  showToggle
+                  showPassword={showPassword}
+                  onTogglePassword={() => setShowPassword(!showPassword)}
+                  className="appearance-none rounded-none relative block w-full px-10 py-3 bg-black bg-opacity-50 border border-gray-700 placeholder-gray-500 text-white rounded-b-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                />
               </div>
 
-              {error && (
-                <div className="rounded-md bg-red-900 bg-opacity-20 backdrop-blur p-4 border border-red-800">
-                  <div className="flex">
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-400">
-                        Error
-                      </h3>
-                      <div className="mt-2 text-sm text-red-300">
-                        <p>{error}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <ErrorMessage message={error} />
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-600 rounded bg-gray-800"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
-                    Remember me
-                  </label>
-                </div>
+                <Checkbox
+                  id="remember-me"
+                  name="remember-me"
+                  checked={formData.rememberMe}
+                  onChange={handleRememberMeChange}
+                  label="Remember me"
+                />
 
                 <div className="text-sm">
                   <Link to="/forgot-password" className="font-medium text-purple-400 hover:text-purple-300">
@@ -162,20 +108,14 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
               </div>
 
               <div>
-                <button
+                <LoadingButton
                   type="submit"
-                  disabled={isLoading}
-                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/50"
+                  isLoading={isLoading}
+                  disabled={!isFormValid()}
+                  loadingText="Signing in..."
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                      Signing in...
-                    </>
-                  ) : (
-                    'Sign in'
-                  )}
-                </button>
+                  Sign in
+                </LoadingButton>
               </div>
 
               <div className="text-center">
