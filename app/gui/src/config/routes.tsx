@@ -4,6 +4,8 @@ import LandingPage from '../LandingPage';
 import Login from '../Login';
 import Register from '../Register';
 import EmailVerification from '../EmailVerification';
+import ForgotPassword from '../ForgotPassword';
+import ResetPassword from '../ResetPassword';
 import Layout from '../Layout';
 import PasswordManager from '../PasswordManager';
 import SettingsPage from '../components/pages/SettingsPage';
@@ -33,6 +35,10 @@ export const publicRoutes = [
     element: <EmailVerification />
   },
   {
+    path: '/reset-password',
+    element: <ResetPassword />
+  },
+  {
     path: '/signup',
     element: <Navigate to="/register" replace />
   },
@@ -50,6 +56,10 @@ export const authRoutes = [
   {
     path: '/register',
     element: <Register />
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPassword />
   }
 ];
 

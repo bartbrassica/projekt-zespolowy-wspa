@@ -16,3 +16,9 @@ export {
   createPayloadFromFormData
 } from './passwordUtils';
 export { copyToClipboard } from './passwordUtils';
+export {
+  extractResetToken,
+  validateNewPassword,
+  passwordsMatch,
+  validateEmail
+} from './passwordResetUtils';

@@ -18,3 +18,6 @@ export { useAuthState } from './useAuthState';
 export { useAuthActions } from './useAuthActions';
 export { useAppRouting } from './useAppRouting';
 export { useLayoutActions } from './useLayoutActions';
+export { useForgotPassword } from './useForgotPassword';
+export { useResetPassword } from './useResetPassword';
+export { useChangePassword } from './useChangePassword';
