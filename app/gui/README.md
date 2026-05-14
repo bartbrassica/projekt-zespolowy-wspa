@@ -1,54 +1,174 @@
-# React + TypeScript + Vite
+# Digital Lockbox - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A secure password management application frontend built with React, TypeScript, and TailwindCSS.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Framework**: React 19
+- **Language**: TypeScript
+- **Build Tool**: Vite 6
+- **Styling**: TailwindCSS 4
+- **Routing**: React Router 7
+- **Icons**: Lucide React
+- **Linting**: ESLint with TypeScript support
 
-## Expanding the ESLint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js 20+
+- npm
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Development Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Configure environment (optional)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The development server is pre-configured to proxy API requests to `http://localhost:8000`. If your API runs on a different port, update `vite.config.ts`:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```typescript
+server: {
+  proxy: {
+    '/api': {
+      target: 'http://localhost:YOUR_PORT',
+      changeOrigin: true,
+      secure: false,
+    }
+  }
+}
 ```
+
+### 3. Start development server
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`
+
+## Available Scripts
+
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint
+
+## Building for Production
+
+### Standard build
+
+```bash
+npm run build
+```
+
+The build output will be in the `dist/` directory.
+
+### Docker build
+
+See the main project README for Docker deployment instructions.
+
+## Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+├── contexts/           # React contexts (auth, theme, etc.)
+├── hooks/              # Custom React hooks
+│   ├── useAuth.ts
+│   ├── usePasswordManager.ts
+│   └── ...
+├── pages/              # Page components
+│   ├── Login.tsx
+│   ├── Register.tsx
+│   ├── Dashboard.tsx
+│   └── ...
+├── services/           # API services
+│   └── authApi.ts
+├── types/              # TypeScript type definitions
+│   └── auth.ts
+├── App.tsx             # Main app component
+├── main.tsx           # Application entry point
+└── index.css          # Global styles
+```
+
+## Features
+
+- User authentication (login, register, password reset)
+- Email verification
+- Secure password storage and management
+- Password generation
+- Responsive design
+- Form validation
+
+## API Integration
+
+All API calls are made to `/api/*` endpoints, which are:
+- Proxied to the backend in development (via Vite)
+- Proxied via Nginx in production (Docker)
+
+API service example:
+
+```typescript
+// src/services/authApi.ts
+export const authApi = {
+  async login(credentials: LoginCredentials): Promise<AuthTokens> {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    return response.json();
+  }
+};
+```
+
+## Environment Variables
+
+For build-time configuration, create a `.env` file:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+Access in code:
+
+```typescript
+const apiUrl = import.meta.env.VITE_API_URL;
+```
+
+## Docker Deployment
+
+The application uses a multi-stage Docker build:
+
+1. **Builder stage**: Builds the React app with Node 20
+2. **Production stage**: Serves static files with Nginx
+
+### Build and run
+
+```bash
+docker build -t digitalockbox-gui .
+docker run -p 3000:80 digitalockbox-gui
+```
+
+### Nginx configuration
+
+The included `nginx.conf` handles:
+- Serving static files
+- SPA routing (all routes → index.html)
+- API proxying to backend
+- Asset caching
+- Gzip compression
+
+## Contributing
+
+1. Follow the existing code style
+2. Run `npm run lint` before committing
+3. Ensure all TypeScript types are properly defined
+4. Test on both development and production builds
+
+## License
+
+MIT
