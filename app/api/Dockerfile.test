@@ -1,0 +1,55 @@
+FROM python:3.12.9-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    make \
+    libc6-dev \
+    postgresql-client \
+    libpq-dev \
+    libffi-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy uv package manager
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Copy dependency files
+COPY pyproject.toml uv.lock* ./
+
+# Install all dependencies including Django and test packages
+RUN uv pip install --system \
+    django>=5.2 \
+    django-ninja>=1.4.0 \
+    pydantic[email]>=2.11.2 \
+    psycopg2-binary>=2.9.10 \
+    argon2-cffi>=25.1.0 \
+    cryptography>=45.0.4 \
+    pyjwt>=2.10.1 \
+    python-dotenv>=1.0.0 \
+    pytest>=8.0.0 \
+    pytest-django>=4.8.0 \
+    pytest-cov>=4.1.0 \
+    pytest-xdist>=3.5.0 \
+    factory-boy>=3.3.0 \
+    faker>=24.0.0 \
+    freezegun>=1.4.0 \
+    pytest-mock>=3.12.0
+
+# Copy application code
+COPY . .
+
+# Create directory for test reports
+RUN mkdir -p /app/test-reports
+
+# Set environment variables for testing
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+ENV DJANGO_SETTINGS_MODULE=authentication.settings
+
+# Default command runs tests from the authentication directory
+WORKDIR /app/authentication
+CMD ["pytest", "-v", "--cov=authentication", "--cov-report=html", "--cov-report=term-missing", "--cov-report=xml"]

@@ -16,3 +16,65 @@ dependencies = [
     "pyjwt>=2.10.1",
     "ruff>=0.11.4",
 ]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+    "pytest-django>=4.8.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.5.0",
+    "factory-boy>=3.3.0",
+    "faker>=24.0.0",
+    "freezegun>=1.4.0",
+    "pytest-mock>=3.12.0",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "authentication.settings"
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--strict-markers",
+    "--cov=authentication",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--tb=short",
+    "--reuse-db",
+]
+testpaths = ["authentication/tests"]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+    "auth: Authentication related tests",
+    "password: Password management tests",
+]
+
+[tool.coverage.run]
+source = ["authentication"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/__init__.py",
+    "*/wsgi.py",
+    "*/asgi.py",
+    "*/manage.py",
+    "*/settings.py",
+    "*/config.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
