@@ -133,10 +133,10 @@ class TestPasswordChangeEndpoint:
 
         assert response.status_code in [200, 400]
 
-    def test_login_with_new_password(self, api_client, verified_user, test_password):
+    def test_login_with_new_password(self, api_client, user, test_password):
         from authentication.utils import create_jwt_tokens
 
-        tokens = create_jwt_tokens(verified_user)
+        tokens = create_jwt_tokens(user)
         api_client.defaults["HTTP_AUTHORIZATION"] = f"Bearer {tokens['access_token']}"
 
         change_data = {
@@ -151,7 +151,7 @@ class TestPasswordChangeEndpoint:
             content_type="application/json",
         )
 
-        login_data = {"email": verified_user.email, "password": "BrandNewPass123!"}
+        login_data = {"email": user.email, "password": "BrandNewPass123!"}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -160,10 +160,10 @@ class TestPasswordChangeEndpoint:
 
         assert login_response.status_code == 200
 
-    def test_old_password_no_longer_works(self, api_client, verified_user, test_password):
+    def test_old_password_no_longer_works(self, api_client, user, test_password):
         from authentication.utils import create_jwt_tokens
 
-        tokens = create_jwt_tokens(verified_user)
+        tokens = create_jwt_tokens(user)
         api_client.defaults["HTTP_AUTHORIZATION"] = f"Bearer {tokens['access_token']}"
 
         change_data = {
@@ -178,7 +178,7 @@ class TestPasswordChangeEndpoint:
             content_type="application/json",
         )
 
-        login_data = {"email": verified_user.email, "password": test_password}
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -192,8 +192,8 @@ class TestPasswordChangeEndpoint:
 @pytest.mark.django_db
 class TestPasswordResetRequestEndpoint:
 
-    def test_request_password_reset_success(self, api_client, verified_user, clear_emails):
-        reset_data = {"email": verified_user.email}
+    def test_request_password_reset_success(self, api_client, user, clear_emails):
+        reset_data = {"email": user.email}
 
         response = api_client.post(
             "/api/password/reset/request",
@@ -205,10 +205,10 @@ class TestPasswordResetRequestEndpoint:
         assert "email" in response.json()["message"].lower()
 
         assert len(mail.outbox) == 1
-        assert verified_user.email in mail.outbox[0].to
+        assert user.email in mail.outbox[0].to
 
         token = Token.objects.filter(
-            user=verified_user, token_type="password_reset"
+            user=user, token_type="password_reset"
         ).first()
         assert token is not None
         assert token.is_used is False
@@ -248,8 +248,8 @@ class TestPasswordResetRequestEndpoint:
 
         assert response.status_code == 422
 
-    def test_multiple_password_reset_requests(self, api_client, verified_user, clear_emails):
-        reset_data = {"email": verified_user.email}
+    def test_multiple_password_reset_requests(self, api_client, user, clear_emails):
+        reset_data = {"email": user.email}
 
         for _ in range(3):
             response = api_client.post(
@@ -266,7 +266,7 @@ class TestPasswordResetRequestEndpoint:
 @pytest.mark.django_db
 class TestPasswordResetConfirmEndpoint:
 
-    def test_confirm_password_reset_success(self, api_client, verified_user, password_reset_token):
+    def test_confirm_password_reset_success(self, api_client, user, password_reset_token):
         confirm_data = {
             "token": str(password_reset_token.token),
             "new_password": "ResetPassword123!",
@@ -282,10 +282,10 @@ class TestPasswordResetConfirmEndpoint:
         assert response.status_code == 200
         assert "reset successfully" in response.json()["message"].lower()
 
-        verified_user.refresh_from_db()
-        assert verified_user.check_password("ResetPassword123!")
+        user.refresh_from_db()
+        assert user.check_password("ResetPassword123!")
 
-    def test_confirm_password_reset_marks_token_used(self, api_client, verified_user, password_reset_token):
+    def test_confirm_password_reset_marks_token_used(self, api_client, user, password_reset_token):
         confirm_data = {
             "token": str(password_reset_token.token),
             "new_password": "ResetPassword123!",
@@ -331,7 +331,7 @@ class TestPasswordResetConfirmEndpoint:
 
         assert response.status_code == 400
 
-    def test_confirm_password_reset_used_token(self, api_client, verified_user, password_reset_token):
+    def test_confirm_password_reset_used_token(self, api_client, user, password_reset_token):
         confirm_data = {
             "token": str(password_reset_token.token),
             "new_password": "ResetPassword123!",
@@ -382,12 +382,12 @@ class TestPasswordResetConfirmEndpoint:
 
         assert response.status_code in [400, 422]
 
-    def test_confirm_password_reset_invalidates_refresh_tokens(self, api_client, verified_user, password_reset_token):
+    def test_confirm_password_reset_invalidates_refresh_tokens(self, api_client, user, password_reset_token):
         from authentication.utils import create_jwt_tokens
         from authentication.db_utils import create_refresh_token
 
-        tokens = create_jwt_tokens(verified_user)
-        create_refresh_token(verified_user, tokens["jti"])
+        tokens = create_jwt_tokens(user)
+        create_refresh_token(user, tokens["jti"])
 
         confirm_data = {
             "token": str(password_reset_token.token),
@@ -402,7 +402,7 @@ class TestPasswordResetConfirmEndpoint:
         )
 
         active_tokens = Token.objects.filter(
-            user=verified_user, token_type="refresh", is_used=False
+            user=user, token_type="refresh", is_used=False
         ).count()
         assert active_tokens == 0
 
@@ -411,8 +411,8 @@ class TestPasswordResetConfirmEndpoint:
 @pytest.mark.django_db
 class TestPasswordResetFlow:
 
-    def test_complete_password_reset_flow(self, api_client, verified_user, clear_emails):
-        reset_data = {"email": verified_user.email}
+    def test_complete_password_reset_flow(self, api_client, user, clear_emails):
+        reset_data = {"email": user.email}
         api_client.post(
             "/api/password/reset/request",
             data=json.dumps(reset_data),
@@ -420,7 +420,7 @@ class TestPasswordResetFlow:
         )
 
         token = Token.objects.filter(
-            user=verified_user, token_type="password_reset"
+            user=user, token_type="password_reset"
         ).first()
 
         confirm_data = {
@@ -437,7 +437,7 @@ class TestPasswordResetFlow:
 
         assert confirm_response.status_code == 200
 
-        login_data = {"email": verified_user.email, "password": "CompletelyNewPass123!"}
+        login_data = {"email": user.email, "password": "CompletelyNewPass123!"}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),

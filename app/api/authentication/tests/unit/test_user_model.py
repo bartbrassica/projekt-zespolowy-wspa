@@ -245,7 +245,7 @@ class TestUserPermissions:
 class TestUserStates:
     """Tests for User state management."""
 
-    def test_verified_user(self):
+    def test_user(self):
         """Test verified user state."""
         user = UserFactory(is_verified=True)
         assert user.is_verified is True

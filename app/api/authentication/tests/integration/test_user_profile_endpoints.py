@@ -359,8 +359,8 @@ class TestUserProfileIntegration:
         assert user.first_name == "Third"
         assert user.last_name == "Fourth"
 
-    def test_update_after_token_refresh(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_update_after_token_refresh(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),

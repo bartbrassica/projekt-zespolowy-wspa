@@ -93,24 +93,6 @@ def user(db, test_password):
 
 
 @pytest.fixture
-def verified_user(db, test_password):
-    """
-    Create a verified test user.
-    """
-    from authentication.models import User
-
-    user = User.objects.create_user(
-        email="verified@example.com",
-        password=test_password,
-        first_name="Verified",
-        last_name="User",
-        is_verified=True,
-        is_active=True,
-    )
-    return user
-
-
-@pytest.fixture
 def unverified_user(db, test_password):
     """
     Create an unverified test user.
@@ -178,24 +160,24 @@ def verification_token(user):
 
 
 @pytest.fixture
-def password_reset_token(verified_user):
+def password_reset_token(user):
     """
     Create a password reset token for a verified user.
     """
     from authentication.db_utils import create_password_reset_token
 
-    return create_password_reset_token(verified_user)
+    return create_password_reset_token(user)
 
 
 @pytest.fixture
-def expired_token(verified_user):
+def expired_token(user):
     """
     Create an expired token for testing.
     """
     from authentication.models import Token
 
     token = Token.objects.create(
-        user=verified_user,
+        user=user,
         token_type="password_reset",
         expires_at=timezone.now() - timedelta(hours=1),
     )
@@ -244,7 +226,7 @@ def user_session(user):
 
 
 @pytest.fixture
-def password_entry(user, test_master_password):
+def password_entry(user, test_password):
     """
     Create a test password entry.
     """
@@ -252,7 +234,7 @@ def password_entry(user, test_master_password):
     from authentication.encryption_service import encryption_service
 
     encrypted_password, salt = encryption_service.encrypt_password(
-        "test-password-123", test_master_password
+        "test-password-123", test_password
     )
 
     entry = PasswordEntry.objects.create(

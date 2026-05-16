@@ -102,15 +102,22 @@ def list_password_entries(
     request: HttpRequest,
     query: str | None = None,
     folder_id: str | None = None,
-    tags: list[str] | None = Query(None),
-    show_expired: bool = False,
-    show_favorites_only: bool = False,
-    sort_by: str = "updated_at",
-    sort_order: str = "desc",
-    limit: int = 50,
-    offset: int = 0,
-) -> list[PasswordEntry]:
+    tags: str | None = None,
+    show_expired: bool | None = None,
+    show_favorites_only: bool | None = None,
+    sort_by: str | None = None,
+    sort_order: str | None = None,
+    limit: int | None = None,
+    offset: int | None = None,
+) -> list:
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error(f"[DEBUG LIST_ENTRIES] Called with params: query={query}, folder_id={folder_id}, tags={tags}, show_expired={show_expired}, show_favorites_only={show_favorites_only}, sort_by={sort_by}, sort_order={sort_order}, limit={limit}, offset={offset}")
+    logger.error(f"[DEBUG LIST_ENTRIES] Request type: {type(request)}, Request: {request}")
+    logger.error(f"[DEBUG LIST_ENTRIES] Request auth: {request.auth}")
+
     user = get_user_from_auth(request.auth)
+    logger.error(f"[DEBUG LIST_ENTRIES] User: {user}")
 
     entries = (
         PasswordEntry.objects.filter(user=user)
@@ -118,6 +125,7 @@ def list_password_entries(
         .prefetch_related("tags")
     )
 
+    # Handle query parameter
     if query:
         entries = entries.filter(
             Q(name__icontains=query)
@@ -126,31 +134,83 @@ def list_password_entries(
             | Q(notes__icontains=query)
         )
 
+    # Handle folder_id
     if folder_id:
         entries = entries.filter(folder_id=folder_id)
 
+    # Handle tags filtering
     if tags:
-        for tag in tags:
+        tag_list = [tag.strip() for tag in tags.split(',')]
+        for tag in tag_list:
             entries = entries.filter(tags__name=tag)
 
-    if not show_expired:
+    # Handle show_expired (default to False if not specified)
+    if show_expired is None or not show_expired:
         entries = entries.filter(
             Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now())
         )
 
+    # Handle show_favorites_only
     if show_favorites_only:
         entries = entries.filter(is_favorite=True)
 
+    # Handle sort_by (default to updated_at)
+    if sort_by is None:
+        sort_by = "updated_at"
     if sort_by not in PasswordManagerConstants.VALID_SORT_FIELDS.value:
         sort_by = PasswordManagerConstants.DEFAULT_SORT_FIELD.value
+
+    # Handle sort_order (default to desc)
+    if sort_order is None:
+        sort_order = "desc"
 
     order_field = sort_by
     if sort_order == "desc":
         order_field = f"-{order_field}"
     entries = entries.order_by(order_field)
+
+    # Handle pagination (defaults: limit=50, offset=0)
+    if limit is None:
+        limit = 50
+    if offset is None:
+        offset = 0
     entries = entries[offset : offset + limit]
 
     return list(entries)
+
+
+@password_router.post("/entries/bulk-delete", response={200: MessageOut}, auth=auth_jwt)
+@transaction.atomic
+def bulk_delete_entries(
+    request: HttpRequest, data: PasswordBulkDeleteRequest
+) -> dict[str, str]:
+    user = get_user_from_auth(request.auth)
+
+    if not verify_master_password(user, data.master_password):
+        raise HttpError(400, "Invalid master password")
+
+    # Filter out invalid UUIDs to prevent ValidationError
+    from django.core.exceptions import ValidationError
+    import uuid
+
+    valid_ids = []
+    for entry_id in data.entry_ids:
+        try:
+            uuid.UUID(entry_id)
+            valid_ids.append(entry_id)
+        except (ValueError, ValidationError):
+            continue
+
+    entries = PasswordEntry.objects.filter(id__in=valid_ids, user=user)
+
+    count = entries.count()
+
+    for entry in entries:
+        log_password_access(entry, user, "delete", request)
+
+    entries.delete()
+
+    return {"message": f"Successfully deleted {count} entries"}
 
 
 @password_router.get(
@@ -454,28 +514,6 @@ def delete_tag(request: HttpRequest, tag_id: str) -> tuple[int, None]:
         raise HttpError(404, "Tag not found")
 
 
-@password_router.post("/entries/bulk-delete", response={200: MessageOut}, auth=auth_jwt)
-@transaction.atomic
-def bulk_delete_entries(
-    request: HttpRequest, data: PasswordBulkDeleteRequest
-) -> dict[str, str]:
-    user = get_user_from_auth(request.auth)
-
-    if not verify_master_password(user, data.master_password):
-        raise HttpError(400, "Invalid master password")
-
-    entries = PasswordEntry.objects.filter(id__in=data.entry_ids, user=user)
-
-    count = entries.count()
-
-    for entry in entries:
-        log_password_access(entry, user, "delete", request)
-
-    entries.delete()
-
-    return {"message": f"Successfully deleted {count} entries"}
-
-
 @password_router.post(
     "/master-password/change", response={200: MessageOut}, auth=auth_jwt
 )
@@ -490,11 +528,12 @@ def change_master_password(
 
     entries = PasswordEntry.objects.filter(user=user)
     for entry in entries:
+        salt_bytes = convert_salt_to_bytes(entry.encryption_salt)
         result = encryption_service.re_encrypt_password(
             entry.encrypted_password,
             data.current_master_password,
             data.new_master_password,
-            entry.encryption_salt,
+            salt_bytes,
         )
 
         if result:
@@ -529,7 +568,7 @@ def import_passwords(
         if data.format == "csv":
             reader = csv.DictReader(io.StringIO(file_content))
             for row in reader:
-                if "name" not in row or "password" not in row:
+                if not row.get("name") or not row.get("password"):
                     continue
                 if PasswordEntry.objects.filter(
                     user=user,
@@ -558,7 +597,7 @@ def import_passwords(
                 entries = [entries]
 
             for entry in entries:
-                if "name" not in entry or "password" not in entry:
+                if not entry.get("name") or not entry.get("password"):
                     continue
                 if PasswordEntry.objects.filter(
                     user=user, name=entry["name"], site=entry.get("site", "")
@@ -618,8 +657,9 @@ def export_passwords(
         }
 
         if data.include_passwords:
+            salt = convert_salt_to_bytes(entry.encryption_salt)
             decrypted = encryption_service.decrypt_password(
-                entry.encrypted_password, data.master_password, entry.encryption_salt
+                entry.encrypted_password, data.master_password, salt
             )
             if decrypted:
                 entry_data["password"] = decrypted
@@ -664,8 +704,9 @@ def create_share_link(
 
     try:
         entry = PasswordEntry.objects.get(id=data.password_entry_id, user=user)
+        salt = convert_salt_to_bytes(entry.encryption_salt)
         decrypted = encryption_service.decrypt_password(
-            entry.encrypted_password, data.master_password, entry.encryption_salt
+            entry.encrypted_password, data.master_password, salt
         )
 
         if not decrypted:

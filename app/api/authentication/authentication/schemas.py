@@ -295,6 +295,20 @@ class PasswordGenerateResponse(Schema):
     strength: dict[str, str | int | bool]
 
 
+class PasswordListFilters(Schema):
+    """Schema for listing/filtering passwords via query parameters."""
+
+    query: str | None = None
+    folder_id: str | None = None
+    tags: list[str] | None = None
+    show_expired: bool | None = None
+    show_favorites_only: bool | None = None
+    sort_by: str | None = None
+    sort_order: str | None = None
+    limit: int | None = None
+    offset: int | None = None
+
+
 class PasswordSearchRequest(Schema):
     """Schema for searching passwords."""
 

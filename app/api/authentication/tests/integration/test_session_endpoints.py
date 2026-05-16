@@ -391,10 +391,10 @@ class TestTerminateSessionEndpoint:
 class TestSessionManagementWorkflows:
     """Test complete session management workflows."""
 
-    def test_login_creates_session_and_can_list(self, api_client, verified_user, test_password):
+    def test_login_creates_session_and_can_list(self, api_client, user, test_password):
         """Test that login creates a session that can be listed."""
         # Login
-        login_data = {"email": verified_user.email, "password": test_password}
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -405,7 +405,7 @@ class TestSessionManagementWorkflows:
         tokens = login_response.json()
 
         # Verify session was created
-        assert UserSession.objects.filter(user=verified_user, is_active=True).exists()
+        assert UserSession.objects.filter(user=user, is_active=True).exists()
 
         # List sessions
         api_client.defaults["HTTP_AUTHORIZATION"] = f"Bearer {tokens['access_token']}"
@@ -477,10 +477,10 @@ class TestSessionManagementWorkflows:
         list_data2 = list_response2.json()
         assert len(list_data2["sessions"]) == 0
 
-    def test_session_list_after_logout(self, api_client, verified_user, test_password):
+    def test_session_list_after_logout(self, api_client, user, test_password):
         """Test session list after user logs out."""
         # Login
-        login_data = {"email": verified_user.email, "password": test_password}
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -492,7 +492,7 @@ class TestSessionManagementWorkflows:
 
         # Create a session
         UserSession.objects.create(
-            user=verified_user,
+            user=user,
             session_key="test-key",
             is_active=True,
         )
@@ -505,26 +505,26 @@ class TestSessionManagementWorkflows:
         list_response = api_client.get("/api/sessions")
         assert list_response.status_code == 200
 
-    def test_concurrent_session_management(self, api_client, verified_user, test_password):
+    def test_concurrent_session_management(self, api_client, user, test_password):
         """Test managing sessions from multiple devices concurrently."""
         from authentication.utils import create_jwt_tokens
 
         # Create multiple sessions simulating different devices
         session1 = UserSession.objects.create(
-            user=verified_user,
+            user=user,
             session_key="device1-key",
             device_name="Desktop",
             is_active=True,
         )
         session2 = UserSession.objects.create(
-            user=verified_user,
+            user=user,
             session_key="device2-key",
             device_name="Mobile",
             is_active=True,
         )
 
         # Get tokens for user
-        tokens = create_jwt_tokens(verified_user)
+        tokens = create_jwt_tokens(user)
         api_client.defaults["HTTP_AUTHORIZATION"] = f"Bearer {tokens['access_token']}"
 
         # List sessions

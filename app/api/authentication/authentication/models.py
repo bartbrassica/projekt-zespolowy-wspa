@@ -286,8 +286,21 @@ class PasswordFolder(models.Model):
 
     @property
     def entry_count(self) -> int:
-        """Get count of entries in this folder."""
+        """Get count of entries in this folder.
+
+        If the instance has an annotated entry_count (from queryset annotation),
+        use that. Otherwise, calculate it dynamically.
+        """
+        # Check if entry_count was set via annotation
+        if hasattr(self, '_entry_count'):
+            return self._entry_count
+        # Otherwise calculate it
         return self.entries.count()
+
+    @entry_count.setter
+    def entry_count(self, value: int) -> None:
+        """Allow Django ORM to set entry_count from annotations."""
+        self._entry_count = value
 
     @property
     def full_path(self) -> str:
@@ -316,8 +329,21 @@ class PasswordTag(models.Model):
 
     @property
     def entry_count(self) -> int:
-        """Get count of entries with this tag."""
+        """Get count of entries with this tag.
+
+        If the instance has an annotated entry_count (from queryset annotation),
+        use that. Otherwise, calculate it dynamically.
+        """
+        # Check if entry_count was set via annotation
+        if hasattr(self, '_entry_count'):
+            return self._entry_count
+        # Otherwise calculate it
         return self.entries.count()
+
+    @entry_count.setter
+    def entry_count(self, value: int) -> None:
+        """Allow Django ORM to set entry_count from annotations."""
+        self._entry_count = value
 
 
 class PasswordShareLink(models.Model):

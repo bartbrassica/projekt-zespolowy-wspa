@@ -5,6 +5,7 @@ from django.http import HttpRequest
 from django.contrib.auth import authenticate
 from django.utils import timezone
 from django.db import transaction
+from django.core.exceptions import ValidationError
 from typing import Any
 
 from .models import User, Token
@@ -92,7 +93,8 @@ def get_user_from_auth(auth: Any) -> User:
     if isinstance(auth, str):
         try:
             return User.objects.get(id=auth)
-        except User.DoesNotExist:
+        except (User.DoesNotExist, ValueError, ValidationError):
+            # ValueError/ValidationError occurs when UUID format is invalid
             raise HttpError(401, "Invalid authentication")
 
     raise HttpError(401, "Invalid authentication")

@@ -5,7 +5,7 @@ Integration tests for JWT token management: refresh, verify, expiration.
 import pytest
 import json
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone as dt_timezone
 from django.conf import settings
 from django.utils import timezone
 
@@ -16,8 +16,8 @@ from authentication.models import Token
 @pytest.mark.django_db
 class TestTokenRefreshEndpoint:
 
-    def test_refresh_token_success(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_refresh_token_success(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -45,8 +45,8 @@ class TestTokenRefreshEndpoint:
         assert new_tokens["access_token"] != tokens["access_token"]
         assert new_tokens["refresh_token"] != tokens["refresh_token"]
 
-    def test_refresh_token_marks_old_token_used(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_refresh_token_marks_old_token_used(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -78,8 +78,8 @@ class TestTokenRefreshEndpoint:
 
         assert response.status_code == 401
 
-    def test_refresh_token_with_access_token(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_refresh_token_with_access_token(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -99,8 +99,8 @@ class TestTokenRefreshEndpoint:
     def test_refresh_token_with_expired_token(self, api_client, user):
         payload = {
             "user_id": str(user.id),
-            "exp": (datetime.utcnow() - timedelta(hours=1)).timestamp(),
-            "iat": (datetime.utcnow() - timedelta(hours=2)).timestamp(),
+            "exp": (datetime.now(dt_timezone.utc) - timedelta(hours=1)).timestamp(),
+            "iat": (datetime.now(dt_timezone.utc) - timedelta(hours=2)).timestamp(),
             "token_type": "refresh",
             "jti": "expired-jti",
         }
@@ -116,8 +116,8 @@ class TestTokenRefreshEndpoint:
 
         assert response.status_code == 401
 
-    def test_refresh_token_already_used(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_refresh_token_already_used(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -141,8 +141,8 @@ class TestTokenRefreshEndpoint:
         )
         assert second_refresh.status_code == 401
 
-    def test_refresh_token_for_inactive_user(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_refresh_token_for_inactive_user(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -150,8 +150,8 @@ class TestTokenRefreshEndpoint:
         )
         tokens = login_response.json()
 
-        verified_user.is_active = False
-        verified_user.save()
+        user.is_active = False
+        user.save()
 
         refresh_data = {"refresh_token": tokens["refresh_token"]}
         response = api_client.post(
@@ -165,8 +165,8 @@ class TestTokenRefreshEndpoint:
     def test_refresh_token_missing_jti(self, api_client, user):
         payload = {
             "user_id": str(user.id),
-            "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp(),
-            "iat": datetime.utcnow().timestamp(),
+            "exp": (datetime.now(dt_timezone.utc) + timedelta(hours=1)).timestamp(),
+            "iat": datetime.now(dt_timezone.utc).timestamp(),
             "token_type": "refresh",
         }
 
@@ -181,8 +181,8 @@ class TestTokenRefreshEndpoint:
 
         assert response.status_code == 401
 
-    def test_multiple_refresh_token_generations(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_multiple_refresh_token_generations(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -223,8 +223,8 @@ class TestTokenVerification:
     def test_access_protected_endpoint_with_expired_access_token(self, api_client, user):
         payload = {
             "user_id": str(user.id),
-            "exp": (datetime.utcnow() - timedelta(minutes=1)).timestamp(),
-            "iat": (datetime.utcnow() - timedelta(hours=1)).timestamp(),
+            "exp": (datetime.now(dt_timezone.utc) - timedelta(minutes=1)).timestamp(),
+            "iat": (datetime.now(dt_timezone.utc) - timedelta(hours=1)).timestamp(),
             "token_type": "access",
         }
 
@@ -234,8 +234,8 @@ class TestTokenVerification:
         response = api_client.get("/api/me")
         assert response.status_code == 401
 
-    def test_access_protected_endpoint_with_refresh_token(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_access_protected_endpoint_with_refresh_token(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -250,8 +250,8 @@ class TestTokenVerification:
 
     def test_token_with_missing_user_id(self, api_client):
         payload = {
-            "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp(),
-            "iat": datetime.utcnow().timestamp(),
+            "exp": (datetime.now(dt_timezone.utc) + timedelta(hours=1)).timestamp(),
+            "iat": datetime.now(dt_timezone.utc).timestamp(),
             "token_type": "access",
         }
 
@@ -264,8 +264,8 @@ class TestTokenVerification:
     def test_token_with_nonexistent_user(self, api_client):
         payload = {
             "user_id": "00000000-0000-0000-0000-000000000000",
-            "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp(),
-            "iat": datetime.utcnow().timestamp(),
+            "exp": (datetime.now(dt_timezone.utc) + timedelta(hours=1)).timestamp(),
+            "iat": datetime.now(dt_timezone.utc).timestamp(),
             "token_type": "access",
         }
 
@@ -278,8 +278,8 @@ class TestTokenVerification:
     def test_token_with_wrong_signature(self, api_client, user):
         payload = {
             "user_id": str(user.id),
-            "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp(),
-            "iat": datetime.utcnow().timestamp(),
+            "exp": (datetime.now(dt_timezone.utc) + timedelta(hours=1)).timestamp(),
+            "iat": datetime.now(dt_timezone.utc).timestamp(),
             "token_type": "access",
         }
 
@@ -307,8 +307,8 @@ class TestTokenVerification:
 @pytest.mark.django_db
 class TestTokenExpiration:
 
-    def test_access_token_expiration_time(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_access_token_expiration_time(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -327,8 +327,8 @@ class TestTokenExpiration:
         token_lifetime = exp_time - iat_time
         assert token_lifetime.total_seconds() > 0
 
-    def test_refresh_token_expiration_time(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_refresh_token_expiration_time(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -350,8 +350,8 @@ class TestTokenExpiration:
     def test_token_not_valid_before_issued(self, api_client, user):
         payload = {
             "user_id": str(user.id),
-            "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp(),
-            "iat": (datetime.utcnow() + timedelta(hours=1)).timestamp(),
+            "exp": (datetime.now(dt_timezone.utc) + timedelta(hours=1)).timestamp(),
+            "iat": (datetime.now(dt_timezone.utc) + timedelta(hours=1)).timestamp(),
             "token_type": "access",
         }
 
@@ -361,8 +361,8 @@ class TestTokenExpiration:
         response = api_client.get("/api/me")
         assert response.status_code in [200, 401]
 
-    def test_token_payload_structure(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_token_payload_structure(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -389,8 +389,8 @@ class TestTokenExpiration:
 @pytest.mark.django_db
 class TestTokenSecurityScenarios:
 
-    def test_token_reuse_after_logout(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_token_reuse_after_logout(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -410,8 +410,8 @@ class TestTokenSecurityScenarios:
 
         assert response.status_code == 401
 
-    def test_concurrent_token_refresh(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_concurrent_token_refresh(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -436,8 +436,8 @@ class TestTokenSecurityScenarios:
         assert response1.status_code == 200
         assert response2.status_code == 401
 
-    def test_token_contains_correct_user_info(self, api_client, verified_user, test_password):
-        login_data = {"email": verified_user.email, "password": test_password}
+    def test_token_contains_correct_user_info(self, api_client, user, test_password):
+        login_data = {"email": user.email, "password": test_password}
         login_response = api_client.post(
             "/api/login",
             data=json.dumps(login_data),
@@ -447,7 +447,7 @@ class TestTokenSecurityScenarios:
         tokens = login_response.json()
         payload = jwt.decode(tokens["access_token"], options={"verify_signature": False})
 
-        assert payload["user_id"] == str(verified_user.id)
+        assert payload["user_id"] == str(user.id)
 
     def test_different_users_different_tokens(self, api_client, multiple_users, test_password):
         tokens_list = []

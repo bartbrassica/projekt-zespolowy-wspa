@@ -72,10 +72,10 @@ class TestVerifyEmailPostEndpoint:
         assert response.status_code == 400
         assert "invalid" in response.json()["detail"].lower() or "expired" in response.json()["detail"].lower()
 
-    def test_verify_email_post_already_verified(self, api_client, verified_user, clear_emails):
+    def test_verify_email_post_already_verified(self, api_client, user, clear_emails):
         from authentication.db_utils import create_verification_token
 
-        verification_token = create_verification_token(verified_user)
+        verification_token = create_verification_token(user)
         verify_data = {"token": str(verification_token.token)}
 
         response = api_client.post(
@@ -151,10 +151,10 @@ class TestVerifyEmailGetEndpoint:
 
         assert response.status_code == 400
 
-    def test_verify_email_get_already_verified(self, api_client, verified_user, clear_emails):
+    def test_verify_email_get_already_verified(self, api_client, user, clear_emails):
         from authentication.db_utils import create_verification_token
 
-        verification_token = create_verification_token(verified_user)
+        verification_token = create_verification_token(user)
 
         response = api_client.get(f"/api/verify-email/{str(verification_token.token)}")
 
@@ -190,10 +190,10 @@ class TestResendVerificationEndpoint:
         ).first()
         assert token is not None
 
-    def test_resend_verification_already_verified(self, api_client, verified_user):
+    def test_resend_verification_already_verified(self, api_client, user):
         from authentication.utils import create_jwt_tokens
 
-        tokens = create_jwt_tokens(verified_user)
+        tokens = create_jwt_tokens(user)
         api_client.defaults["HTTP_AUTHORIZATION"] = f"Bearer {tokens['access_token']}"
 
         response = api_client.post("/api/resend-verification")
@@ -237,10 +237,10 @@ class TestResendVerificationEndpoint:
 @pytest.mark.django_db
 class TestVerificationStatusEndpoint:
 
-    def test_verification_status_verified_user(self, api_client, verified_user):
+    def test_verification_status_user(self, api_client, user):
         from authentication.utils import create_jwt_tokens
 
-        tokens = create_jwt_tokens(verified_user)
+        tokens = create_jwt_tokens(user)
         api_client.defaults["HTTP_AUTHORIZATION"] = f"Bearer {tokens['access_token']}"
 
         response = api_client.get("/api/verification-status")

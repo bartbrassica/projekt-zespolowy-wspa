@@ -116,8 +116,8 @@ class TestRegisterEndpoint:
 @pytest.mark.django_db
 class TestLoginEndpoint:
 
-    def test_login_success(self, api_client, verified_user, test_password):
-        data = {"email": verified_user.email, "password": test_password}
+    def test_login_success(self, api_client, user, test_password):
+        data = {"email": user.email, "password": test_password}
 
         response = api_client.post(
             "/api/login",
@@ -137,17 +137,17 @@ class TestLoginEndpoint:
         assert len(response_data["access_token"]) > 50
         assert len(response_data["refresh_token"]) > 50
 
-        session = UserSession.objects.filter(user=verified_user).first()
+        session = UserSession.objects.filter(user=user).first()
         assert session is not None
 
         refresh_token = Token.objects.filter(
-            user=verified_user, token_type="refresh"
+            user=user, token_type="refresh"
         ).first()
         assert refresh_token is not None
 
-    def test_login_with_remember_me(self, api_client, verified_user, test_password):
+    def test_login_with_remember_me(self, api_client, user, test_password):
         data = {
-            "email": verified_user.email,
+            "email": user.email,
             "password": test_password,
             "remember_me": True,
         }
@@ -160,8 +160,8 @@ class TestLoginEndpoint:
 
         assert response.status_code == 200
 
-    def test_login_invalid_credentials(self, api_client, verified_user):
-        data = {"email": verified_user.email, "password": "WrongPassword123!"}
+    def test_login_invalid_credentials(self, api_client, user):
+        data = {"email": user.email, "password": "WrongPassword123!"}
 
         response = api_client.post(
             "/api/login",
@@ -234,9 +234,9 @@ class TestLoginEndpoint:
 
         assert response.status_code in [400, 401, 422]
 
-    def test_login_updates_last_login(self, api_client, verified_user, test_password):
-        original_last_login = verified_user.last_login
-        data = {"email": verified_user.email, "password": test_password}
+    def test_login_updates_last_login(self, api_client, user, test_password):
+        original_last_login = user.last_login
+        data = {"email": user.email, "password": test_password}
 
         response = api_client.post(
             "/api/login",
@@ -246,10 +246,10 @@ class TestLoginEndpoint:
 
         assert response.status_code == 200
 
-        verified_user.refresh_from_db()
-        assert verified_user.last_login is not None
+        user.refresh_from_db()
+        assert user.last_login is not None
         if original_last_login:
-            assert verified_user.last_login > original_last_login
+            assert user.last_login > original_last_login
 
 
 @pytest.mark.integration
@@ -284,13 +284,13 @@ class TestLogoutEndpoint:
 
     def test_logout_with_expired_token(self, api_client, user):
         import jwt
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
         from django.conf import settings
 
         payload = {
             "user_id": str(user.id),
-            "exp": (datetime.utcnow() - timedelta(hours=1)).timestamp(),
-            "iat": (datetime.utcnow() - timedelta(hours=2)).timestamp(),
+            "exp": (datetime.now(timezone.utc) - timedelta(hours=1)).timestamp(),
+            "iat": (datetime.now(timezone.utc) - timedelta(hours=2)).timestamp(),
             "token_type": "access",
         }
 
@@ -396,9 +396,9 @@ class TestAuthenticationFlow:
         access_tokens = [t["access_token"] for t in tokens_list]
         assert len(set(access_tokens)) == len(access_tokens)
 
-    def test_login_after_failed_attempts(self, api_client, verified_user, test_password):
+    def test_login_after_failed_attempts(self, api_client, user, test_password):
         for _ in range(3):
-            data = {"email": verified_user.email, "password": "WrongPassword"}
+            data = {"email": user.email, "password": "WrongPassword"}
             response = api_client.post(
                 "/api/login",
                 data=json.dumps(data),
@@ -406,7 +406,7 @@ class TestAuthenticationFlow:
             )
             assert response.status_code == 401
 
-        data = {"email": verified_user.email, "password": test_password}
+        data = {"email": user.email, "password": test_password}
         response = api_client.post(
             "/api/login",
             data=json.dumps(data),
