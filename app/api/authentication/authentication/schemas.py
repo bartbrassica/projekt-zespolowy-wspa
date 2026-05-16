@@ -153,6 +153,12 @@ class SessionOut(Schema):
     last_activity: datetime
     is_active: bool
 
+    @field_validator("id", mode="before")
+    @classmethod
+    def convert_id_to_string(cls, v: int | str) -> str:
+        """Convert integer ID to string."""
+        return str(v)
+
 
 class SessionListOut(Schema):
     """Schema for session list output."""

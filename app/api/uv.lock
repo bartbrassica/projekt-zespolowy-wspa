@@ -352,6 +352,11 @@ test = [
     { name = "pytest-xdist" },
 ]
 
+[package.dev-dependencies]
+test = [
+    { name = "pytest-xdist" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "argon2", specifier = ">=0.1.10" },
@@ -374,6 +379,9 @@ requires-dist = [
     { name = "ruff", specifier = ">=0.11.4" },
 ]
 provides-extras = ["test"]
+
+[package.metadata.requires-dev]
+test = [{ name = "pytest-xdist", specifier = ">=3.8.0" }]
 
 [[package]]
 name = "django-ninja"

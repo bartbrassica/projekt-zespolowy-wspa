@@ -178,25 +178,25 @@ def verification_token(user):
 
 
 @pytest.fixture
-def password_reset_token(user):
+def password_reset_token(verified_user):
     """
-    Create a password reset token for a user.
+    Create a password reset token for a verified user.
     """
     from authentication.db_utils import create_password_reset_token
 
-    return create_password_reset_token(user)
+    return create_password_reset_token(verified_user)
 
 
 @pytest.fixture
-def expired_token(user):
+def expired_token(verified_user):
     """
     Create an expired token for testing.
     """
     from authentication.models import Token
 
     token = Token.objects.create(
-        user=user,
-        token_type="verification",
+        user=verified_user,
+        token_type="password_reset",
         expires_at=timezone.now() - timedelta(hours=1),
     )
     return token
