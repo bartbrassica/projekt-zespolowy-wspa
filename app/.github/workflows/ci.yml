@@ -1,0 +1,142 @@
+name: CI
+
+# IMPORTANT: For private repositories, you need to create a Personal Access Token (PAT)
+# 1. Go to https://github.com/settings/tokens/new
+# 2. Create a token with 'repo' scope
+# 3. Add it as a secret: Settings → Secrets and variables → Actions → New repository secret
+# 4. Name it 'PAT_TOKEN'
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout API repository
+        uses: actions/checkout@v4
+        with:
+          repository: bartbrassica/digitalockbox_api
+          path: digitalockbox_api
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Checkout GUI repository
+        uses: actions/checkout@v4
+        with:
+          repository: bartbrassica/digitalockbox_gui
+          path: digitalockbox_gui
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create test .env file
+        run: |
+          cat > .env << EOF
+          DB_NAME=test_lockbox
+          DB_USER=postgres
+          DB_PASSWORD=postgres
+          CLIENT_SECRET=test-secret-key-for-ci-testing
+          DEBUG=True
+          JWT_ALG=HS256
+          EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
+          FRONTEND_URL=http://localhost:3000
+          EOF
+
+      - name: Run CI tests
+        run: task ci-test
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: digitalockbox_api/authentication/coverage.xml
+          if-no-files-found: ignore
+
+  build:
+    name: Build All Services
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout API repository
+        uses: actions/checkout@v4
+        with:
+          repository: bartbrassica/digitalockbox_api
+          path: digitalockbox_api
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Checkout GUI repository
+        uses: actions/checkout@v4
+        with:
+          repository: bartbrassica/digitalockbox_gui
+          path: digitalockbox_gui
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          DB_NAME=lockbox1
+          DB_USER=postgres
+          DB_PASSWORD=postgres
+          CLIENT_SECRET=build-test-secret-key
+          DEBUG=False
+          JWT_ALG=ES512
+          EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+          EMAIL_HOST=smtp.gmail.com
+          EMAIL_PORT=587
+          EMAIL_USE_TLS=True
+          EMAIL_HOST_USER=test@example.com
+          EMAIL_HOST_PASSWORD=test
+          DEFAULT_FROM_EMAIL=test@example.com
+          FRONTEND_URL=http://localhost:3000
+          EOF
+
+      - name: Build all services
+        run: task build
+
+      - name: Verify services can start
+        run: |
+          task up
+          sleep 30
+          docker ps
+
+          # Check if API is responding
+          curl -f http://localhost:8000/api/docs || exit 1
+
+          # Check if GUI is responding
+          curl -f http://localhost:3000 || exit 1
+
+      - name: Clean up
+        if: always()
+        run: docker compose down

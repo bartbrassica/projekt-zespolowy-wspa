@@ -1,0 +1,42 @@
+services:
+  db:
+    environment:
+      POSTGRES_DB: test_lockbox
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  api_test:
+    build:
+      context: ./digitalockbox_api
+      dockerfile: Dockerfile.test
+    container_name: digitalockbox_api_test
+    environment:
+      DB_NAME: test_lockbox
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      CLIENT_SECRET: test-secret-key-for-testing-only
+      DEBUG: "True"
+      JWT_ALG: HS256
+      EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+      FRONTEND_URL: http://localhost:3000
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./digitalockbox_api:/app
+      - test_reports:/app/test-reports
+      - test_coverage:/app/htmlcov
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        python authentication/manage.py migrate --noinput &&
+        echo 'Running tests...' &&
+        pytest -v --cov=authentication --cov-report=html --cov-report=term-missing --cov-report=xml
+      "
+
+volumes:
+  test_reports:
+  test_coverage:

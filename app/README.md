@@ -71,15 +71,15 @@ FRONTEND_URL=http://localhost:3000
 - For Gmail, use an [App Password](https://support.google.com/accounts/answer/185833)
 - Set `DEBUG=False` in production
 
-### 3. Run with Docker Compose
+### 3. Run with Task
 
 Build and start all services:
 
 ```bash
-docker-compose up --build
+go-task up
 ```
 
-Or run in detached mode:
+Or use docker-compose directly:
 
 ```bash
 docker-compose up -d --build
@@ -94,38 +94,37 @@ docker-compose up -d --build
 
 ## Development
 
-### View logs
+### Quick Reference
 
 ```bash
-# All services
-docker-compose logs -f
+# View all available commands
+go-task --list
 
-# Specific service
-docker-compose logs -f api
-docker-compose logs -f gui
-docker-compose logs -f db
-```
+# Start services
+go-task up
 
-### Stop services
+# Stop services
+go-task down
 
-```bash
-docker-compose down
-```
+# View logs (all services)
+go-task logs
 
-### Reset database
+# View logs for specific service
+go-task logs SERVICE=api
+go-task logs SERVICE=gui
 
-To completely reset the database (removes all data):
+# Database management
+go-task db-up           # Start database
+go-task db-down         # Stop database
+go-task db-reset        # Reset database (removes all data)
 
-```bash
-docker-compose down -v
-docker-compose up
-```
+# Build services
+go-task build
 
-### Rebuild specific service
-
-```bash
-docker-compose up -d --build api
-docker-compose up -d --build gui
+# Django commands
+go-task migrate         # Run migrations
+go-task makemigrations  # Create new migrations
+go-task shell           # Open shell in API container
 ```
 
 ## Project Structure
@@ -187,6 +186,115 @@ If you get "address already in use" errors, either:
 The nginx configuration proxies `/api` requests to the API container. Ensure:
 1. Both containers are running: `docker-compose ps`
 2. Check nginx logs: `docker-compose logs gui`
+
+## Testing
+
+The project includes a comprehensive test suite with pytest.
+
+### Running Tests (Recommended)
+
+The easiest way to run tests is using Task commands:
+
+```bash
+# Run all tests
+go-task test-docker
+
+# Or using the script directly
+./run-tests.sh
+
+# Run only unit tests
+go-task test-docker-unit
+
+# Run only integration tests
+go-task test-docker-integration
+
+# Run tests with coverage report
+go-task test-docker-coverage
+
+# Run specific test file
+go-task test-docker-specific FILE=authentication/tests/unit/test_models.py
+
+# Open test shell for debugging
+go-task test-shell
+
+# List all available tasks
+go-task --list
+```
+
+### Running Tests Manually with Docker
+
+```bash
+# Build test container
+go-task build-test
+
+# Start database
+go-task db-up
+
+# Run tests
+docker-compose --profile test run --rm api_test
+
+# Run specific tests
+docker-compose --profile test run --rm api_test pytest authentication/tests/unit/
+
+# Run with markers
+docker-compose --profile test run --rm api_test pytest -m "unit and auth"
+
+# Stop containers
+go-task down
+```
+
+### Test Organization
+
+Tests are organized in the `digitalockbox_api/authentication/tests/` directory:
+
+- `unit/` - Fast, isolated unit tests
+- `integration/` - Integration tests with database
+- `fixtures/` - Test data factories and fixtures
+- `conftest.py` - Pytest configuration and shared fixtures
+
+See [Testing Documentation](digitalockbox_api/authentication/tests/README.md) for detailed information.
+
+### Available Task Commands
+
+```bash
+go-task --list                 # Show all available commands
+
+# Testing
+go-task test-docker            # Run all tests in Docker
+go-task test-docker-unit       # Run unit tests
+go-task test-docker-integration # Run integration tests
+go-task test-docker-coverage   # Run with coverage
+go-task test-all               # Run full test suite with database
+go-task clean-test             # Clean test artifacts
+
+# Database
+go-task db-up                  # Start database
+go-task db-down                # Stop database
+go-task db-reset               # Reset database
+
+# Services
+go-task up                     # Start all services
+go-task down                   # Stop all services
+go-task build                  # Build all services
+go-task logs SERVICE=api       # View logs for specific service
+
+# Development
+go-task shell                  # Open shell in API container
+go-task migrate                # Run database migrations
+go-task makemigrations         # Create new migrations
+```
+
+### Coverage Reports
+
+After running tests with coverage, view the HTML report:
+
+```bash
+go-task coverage-report  # Opens in default browser (cross-platform)
+
+# Or manually:
+open digitalockbox_api/authentication/htmlcov/index.html  # macOS
+xdg-open digitalockbox_api/authentication/htmlcov/index.html  # Linux
+```
 
 ## License
 

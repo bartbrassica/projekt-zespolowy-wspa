@@ -59,6 +59,32 @@ services:
     environment:
       - VITE_API_URL=http://localhost:8000
 
+  api_test:
+    build:
+      context: ./digitalockbox_api
+      dockerfile: Dockerfile.test
+    container_name: digitalockbox_api_test
+    environment:
+      DB_NAME: ${DB_NAME:-lockbox1}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_HOST: db
+      DB_PORT: 5432
+      CLIENT_SECRET: ${CLIENT_SECRET:-test-secret-key-for-testing}
+      DEBUG: "True"
+      JWT_ALG: HS256
+      EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+      FRONTEND_URL: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./digitalockbox_api:/app
+      - test_reports:/app/test-reports
+    profiles:
+      - test
+
 volumes:
   postgres_data:
   api_static:
+  test_reports:

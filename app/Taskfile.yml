@@ -1,0 +1,157 @@
+version: '3'
+
+vars:
+  COMPOSE: docker compose
+  TEST_SERVICE: api_test
+  TEST_PROFILE: --profile test
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  # Docker test commands
+  test-docker:
+    desc: Run all tests in Docker
+    cmds:
+      - echo "🧪 Running tests in Docker..."
+      - ./run-tests.sh
+
+  test-docker-unit:
+    desc: Run unit tests in Docker
+    cmds:
+      - echo "🧪 Running unit tests in Docker..."
+      - "{{.COMPOSE}} {{.TEST_PROFILE}} run --rm {{.TEST_SERVICE}} pytest -n auto -v -m unit"
+
+  test-docker-integration:
+    desc: Run integration tests in Docker
+    cmds:
+      - echo "🧪 Running integration tests in Docker..."
+      - "{{.COMPOSE}} {{.TEST_PROFILE}} run --rm {{.TEST_SERVICE}} pytest -n auto -v -m integration"
+
+  test-docker-coverage:
+    desc: Run tests with coverage in Docker
+    cmds:
+      - echo "🧪 Running tests with coverage in Docker..."
+      - "{{.COMPOSE}} {{.TEST_PROFILE}} run --rm {{.TEST_SERVICE}} pytest -n auto -v --cov=authentication --cov-report=html --cov-report=term-missing"
+
+  test-docker-specific:
+    desc: "Run specific test file in Docker (usage: task test-docker-specific FILE=path/to/test.py)"
+    cmds:
+      - 'echo "🧪 Running specific test in Docker{{if .FILE}}: {{.FILE}}{{end}}"'
+      - "{{.COMPOSE}} {{.TEST_PROFILE}} run --rm {{.TEST_SERVICE}} pytest -n auto -v {{.FILE}}"
+
+  build-test:
+    desc: Build test Docker image
+    cmds:
+      - "{{.COMPOSE}} -f docker-compose.yml {{.TEST_PROFILE}} build {{.TEST_SERVICE}}"
+
+  # Database commands
+  db-up:
+    desc: Start database container
+    cmds:
+      - "{{.COMPOSE}} up -d db"
+
+  db-down:
+    desc: Stop database container
+    cmds:
+      - "{{.COMPOSE}} down db"
+
+  db-reset:
+    desc: Reset database (removes all data)
+    cmds:
+      - "{{.COMPOSE}} down -v"
+      - "{{.COMPOSE}} up -d db"
+
+  # Application commands
+  up:
+    desc: Start all services
+    cmds:
+      - "{{.COMPOSE}} up -d"
+
+  down:
+    desc: Stop all services
+    cmds:
+      - "{{.COMPOSE}} down"
+
+  logs:
+    desc: "View logs (usage: task logs SERVICE=api)"
+    cmds:
+      - '{{.COMPOSE}} logs -f {{.SERVICE | default ""}}'
+
+  build:
+    desc: Build all services
+    cmds:
+      - "{{.COMPOSE}} build"
+
+  # Cleanup commands
+  clean-test:
+    desc: Clean test artifacts
+    cmds:
+      - find digitalockbox_api -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+      - find digitalockbox_api -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+      - find digitalockbox_api -type f -name ".coverage" -delete 2>/dev/null || true
+      - rm -rf digitalockbox_api/htmlcov 2>/dev/null || true
+      - rm -rf digitalockbox_api/coverage.xml 2>/dev/null || true
+      - rm -rf digitalockbox_api/.pytest_cache 2>/dev/null || true
+      - echo "✅ Test artifacts cleaned"
+
+  clean-all:
+    desc: Clean all generated files including containers
+    cmds:
+      - task: clean-test
+      - "{{.COMPOSE}} down -v"
+      - echo "✅ All cleaned"
+
+  # Combined commands
+  test-all:
+    desc: Run full test suite with database
+    cmds:
+      - task: db-up
+      - task: test-docker
+      - task: db-down
+
+  # CI/CD command
+  ci-test:
+    desc: Run tests for CI/CD
+    cmds:
+      - "{{.COMPOSE}} -f docker-compose.yml {{.TEST_PROFILE}} build {{.TEST_SERVICE}}"
+      - "{{.COMPOSE}} up -d db"
+      - echo "Waiting for database..."
+      - sleep 10
+      - "{{.COMPOSE}} {{.TEST_PROFILE}} run --rm {{.TEST_SERVICE}} sh -c 'cd /app/authentication && python manage.py migrate --noinput && pytest -n auto -v --cov=authentication --cov-config=../.coveragerc --cov-report=xml --cov-report=term'"
+      - "{{.COMPOSE}} down"
+
+  # Development helpers
+  shell:
+    desc: Open shell in API container
+    cmds:
+      - "{{.COMPOSE}} exec api sh"
+
+  test-shell:
+    desc: Open shell in test container
+    cmds:
+      - "{{.COMPOSE}} {{.TEST_PROFILE}} run --rm {{.TEST_SERVICE}} sh"
+
+  migrate:
+    desc: Run database migrations
+    cmds:
+      - "{{.COMPOSE}} exec api python authentication/manage.py migrate"
+
+  makemigrations:
+    desc: Create new migrations
+    cmds:
+      - "{{.COMPOSE}} exec api python authentication/manage.py makemigrations"
+
+  # Coverage report viewing
+  coverage-report:
+    desc: Open coverage report in browser
+    cmds:
+      - test -f digitalockbox_api/authentication/htmlcov/index.html || (echo "Coverage report not found. Run 'go-task test-docker-coverage' first." && exit 1)
+      - cmd: open digitalockbox_api/authentication/htmlcov/index.html
+        platforms: [darwin]
+      - cmd: xdg-open digitalockbox_api/authentication/htmlcov/index.html
+        platforms: [linux]
+      - cmd: start digitalockbox_api/authentication/htmlcov/index.html
+        platforms: [windows]
