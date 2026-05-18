@@ -288,19 +288,20 @@ class PasswordFolder(models.Model):
     def entry_count(self) -> int:
         """Get count of entries in this folder.
 
-        If the instance has an annotated entry_count (from queryset annotation),
-        use that. Otherwise, calculate it dynamically.
+        If the instance was annotated with entry_count in the queryset,
+        return that value. Otherwise, calculate it dynamically.
         """
-        # Check if entry_count was set via annotation
-        if hasattr(self, '_entry_count'):
-            return self._entry_count
-        # Otherwise calculate it
+        # Check if entry_count was added via queryset annotation
+        # Django adds it as a direct attribute when using .annotate()
+        if 'entry_count' in self.__dict__:
+            return self.__dict__['entry_count']
+        # Otherwise calculate it dynamically
         return self.entries.count()
 
     @entry_count.setter
     def entry_count(self, value: int) -> None:
         """Allow Django ORM to set entry_count from annotations."""
-        self._entry_count = value
+        self.__dict__['entry_count'] = value
 
     @property
     def full_path(self) -> str:
