@@ -101,6 +101,8 @@ export interface PasswordModalProps {
   onTogglePasswordVisibility: () => void;
   passwordStrength: PasswordStrengthInfo;
   folders?: Folder[];
+  tags?: Tag[];
+  onCreateTag?: (name: string, color?: string) => Promise<void>;
 }
 
 export interface MasterPasswordModalProps {

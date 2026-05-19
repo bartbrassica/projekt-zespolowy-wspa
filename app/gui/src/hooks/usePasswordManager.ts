@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { authApi } from '../services/authApi';
-import type { PasswordEntry, PasswordGeneratorSettings, PasswordFormData } from '../types/password';
+import type { PasswordEntry, PasswordGeneratorSettings, PasswordFormData, Tag } from '../types/password';
 import { copyToClipboard, createPayloadFromFormData } from '../utils/passwordUtils';
 
 export const usePasswordManager = () => {
@@ -59,14 +59,14 @@ export const usePasswordManager = () => {
     return null;
   };
 
-  const savePassword = async (formData: PasswordFormData, editingId: string | null): Promise<boolean> => {
+  const savePassword = async (formData: PasswordFormData, editingId: string | null, allTags?: Tag[]): Promise<boolean> => {
     try {
       const url = editingId
         ? `/api/passwords/entries/${editingId}`
         : '/api/passwords/entries';
 
       const method = editingId ? 'PUT' : 'POST';
-      const payload = createPayloadFromFormData(formData, editingId);
+      const payload = createPayloadFromFormData(formData, editingId, allTags);
 
       const response = await authApi.authenticatedFetch(url, {
         method,
@@ -93,8 +93,6 @@ export const usePasswordManager = () => {
   };
 
   const deletePassword = async (entryId: string, masterPassword: string): Promise<boolean> => {
-    if (!confirm('Are you sure you want to delete this password?')) return false;
-
     try {
       const response = await authApi.authenticatedFetch(`/api/passwords/entries/${entryId}`, {
         method: 'DELETE',

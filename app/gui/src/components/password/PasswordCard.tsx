@@ -9,7 +9,8 @@ import {
   EyeOff,
   Edit,
   Trash2,
-  Folder
+  Folder,
+  Tag
 } from 'lucide-react';
 import type { PasswordCardProps } from '../../types/password';
 import { getSiteHostname, formatDate } from '../../utils/passwordUtils';
@@ -74,6 +75,27 @@ const PasswordCard: React.FC<PasswordCardProps> = ({
               {entry.folder.icon && `${entry.folder.icon} `}
               {entry.folder.name}
             </span>
+          </div>
+        )}
+
+        {entry.tags && entry.tags.length > 0 && (
+          <div className="flex items-start gap-2 text-sm">
+            <Tag className="h-4 w-4 text-gray-400 mt-0.5" />
+            <div className="flex flex-wrap gap-1.5">
+              {entry.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                  style={{
+                    backgroundColor: tag.color ? `${tag.color}20` : '#e5e7eb',
+                    color: tag.color || '#6b7280',
+                    borderLeft: `3px solid ${tag.color || '#9ca3af'}`
+                  }}
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
           </div>
         )}
 

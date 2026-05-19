@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { RefreshCw, Key, Shield } from 'lucide-react';
 import { filterPasswords, getPasswordStrength } from './utils/passwordUtils';
-import { Alert, SearchBar } from './components/ui';
+import { Alert, SearchBar, ConfirmDialog } from './components/ui';
 import { PasswordCard, PasswordModal, MasterPasswordModal, FolderSidebar } from './components/password';
 import {
   usePasswordManager,
   usePasswordForm,
   useMasterPassword,
   usePasswordVisibility,
-  useFolderManager
+  useFolderManager,
+  useTagManager,
+  useConfirmDialog
 } from './hooks';
 import type { PasswordEntry, PasswordFormData } from './types/password';
 
@@ -17,6 +19,7 @@ const PasswordManager: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<PasswordEntry | null>(null);
   const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(undefined);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   const {
     passwords,
@@ -70,6 +73,17 @@ const PasswordManager: React.FC = () => {
     fetchFolders
   } = useFolderManager();
 
+  const {
+    tags,
+    error: tagsError,
+    createTag,
+    deleteTag,
+    fetchTags,
+    clearError: clearTagsError
+  } = useTagManager();
+
+  const { dialogState, showConfirm, closeDialog, handleConfirm } = useConfirmDialog();
+
   const handleGeneratePassword = async () => {
     const password = await generatePassword();
     if (password) {
@@ -88,13 +102,13 @@ const PasswordManager: React.FC = () => {
       formData = { ...formData, master_password: masterPassword };
     }
 
-    const success = await savePassword(formData, editingEntry?.id || null);
+    const success = await savePassword(formData, editingEntry?.id || null, tags);
     if (success) {
       setShowModal(false);
       setEditingEntry(null);
       resetForm(masterPassword);
-      // Reload folders to update counts
-      await fetchFolders();
+      // Reload folders and tags to update counts
+      await Promise.all([fetchFolders(), fetchTags()]);
     }
   };
 
@@ -129,16 +143,27 @@ const PasswordManager: React.FC = () => {
     }
   };
 
-  const handleDelete = async (entryId: string) => {
-    if (!requestMasterPassword({ type: 'delete', data: entryId })) {
-      return;
-    }
+  const handleDelete = (entryId: string) => {
+    showConfirm(
+      'Delete Password',
+      'Are you sure you want to delete this password? This action cannot be undone.',
+      async () => {
+        if (!requestMasterPassword({ type: 'delete', data: entryId })) {
+          return;
+        }
 
-    const success = await deletePassword(entryId, masterPassword);
-    if (success) {
-      // Reload folders to update counts
-      await fetchFolders();
-    }
+        const success = await deletePassword(entryId, masterPassword);
+        if (success) {
+          // Reload folders and tags to update counts
+          await Promise.all([fetchFolders(), fetchTags()]);
+        }
+      },
+      {
+        type: 'danger',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    );
   };
 
   const handleToggleFavorite = async (entry: PasswordEntry) => {
@@ -211,18 +236,63 @@ const PasswordManager: React.FC = () => {
     await createFolder(name, undefined, icon, color);
   };
 
-  const handleFolderDelete = async (folderId: string) => {
-    await deleteFolder(folderId);
+  const handleFolderDelete = (folderId: string) => {
+    showConfirm(
+      'Delete Folder',
+      'Are you sure you want to delete this folder? Passwords in this folder will not be deleted.',
+      async () => {
+        await deleteFolder(folderId);
+      },
+      {
+        type: 'warning',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    );
   };
 
   const handleFolderSelect = (folderId: string | undefined) => {
     setSelectedFolderId(folderId);
   };
 
-  // Filter passwords by search query and selected folder
+  const handleTagCreate = async (name: string, color?: string) => {
+    await createTag(name, color);
+  };
+
+  const handleTagSelect = (tagId: string) => {
+    setSelectedTagIds(prev => {
+      if (prev.includes(tagId)) {
+        return prev.filter(id => id !== tagId);
+      } else {
+        return [...prev, tagId];
+      }
+    });
+  };
+
+  const handleTagDelete = (tagId: string) => {
+    showConfirm(
+      'Delete Tag',
+      'Are you sure you want to delete this tag? Password entries will not be affected.',
+      async () => {
+        await deleteTag(tagId);
+      },
+      {
+        type: 'warning',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    );
+  };
+
+  // Filter passwords by search query, selected folder, and selected tags
   let filteredPasswords = filterPasswords(passwords, searchQuery);
   if (selectedFolderId) {
     filteredPasswords = filteredPasswords.filter(p => p.folder?.id === selectedFolderId);
+  }
+  if (selectedTagIds.length > 0) {
+    filteredPasswords = filteredPasswords.filter(p =>
+      p.tags && p.tags.some(tag => selectedTagIds.includes(tag.id))
+    );
   }
 
   const passwordStrength = getPasswordStrength(formData.password);
@@ -236,6 +306,11 @@ const PasswordManager: React.FC = () => {
         onSelectFolder={handleFolderSelect}
         onCreateFolder={handleFolderCreate}
         onDeleteFolder={handleFolderDelete}
+        tags={tags}
+        selectedTagIds={selectedTagIds}
+        onSelectTag={handleTagSelect}
+        onCreateTag={handleTagCreate}
+        onDeleteTag={handleTagDelete}
       />
 
       {/* Main Content */}
@@ -256,6 +331,7 @@ const PasswordManager: React.FC = () => {
         {error && <Alert type="error" message={error} onClose={clearError} />}
         {success && <Alert type="success" message={success} onClose={clearSuccess} />}
         {foldersError && <Alert type="error" message={foldersError} onClose={clearFoldersError} />}
+        {tagsError && <Alert type="error" message={tagsError} onClose={clearTagsError} />}
 
         {/* Search and Actions Bar */}
         <SearchBar
@@ -310,6 +386,8 @@ const PasswordManager: React.FC = () => {
           onTogglePasswordVisibility={() => toggleFormPasswordVisibility('form')}
           passwordStrength={passwordStrength}
           folders={folders}
+          tags={tags}
+          onCreateTag={handleTagCreate}
         />
 
         {/* Master Password Modal */}
@@ -319,6 +397,18 @@ const PasswordManager: React.FC = () => {
           onSubmit={handleMasterPasswordSubmit}
           masterPassword={masterPassword}
           onMasterPasswordChange={setMasterPassword}
+        />
+
+        {/* Confirm Dialog */}
+        <ConfirmDialog
+          isOpen={dialogState.isOpen}
+          onClose={closeDialog}
+          onConfirm={handleConfirm}
+          title={dialogState.title}
+          message={dialogState.message}
+          confirmText={dialogState.confirmText}
+          cancelText={dialogState.cancelText}
+          type={dialogState.type}
         />
         </div>
       </div>

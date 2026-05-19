@@ -25,6 +25,8 @@ export const usePasswordForm = () => {
       expires_at: entry.expires_at
         ? new Date(entry.expires_at).toISOString().slice(0, 10)
         : '',
+      folder_id: entry.folder?.id,
+      tag_ids: entry.tags?.map(tag => tag.id) || [],
       master_password: masterPassword
     });
   };

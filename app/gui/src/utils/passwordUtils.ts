@@ -1,4 +1,4 @@
-import type { PasswordEntry, PasswordStrengthInfo, PasswordFormData } from '../types/password';
+import type { PasswordEntry, PasswordStrengthInfo, PasswordFormData, Tag } from '../types/password';
 
 export const getPasswordStrength = (password: string): PasswordStrengthInfo => {
   if (!password) return { strength: 'None', color: 'text-gray-400' };
@@ -54,7 +54,7 @@ export const resetFormData = (masterPassword: string = '') => ({
   master_password: masterPassword
 });
 
-export const createPayloadFromFormData = (formData: PasswordFormData, editingId: string | null) => {
+export const createPayloadFromFormData = (formData: PasswordFormData, editingId: string | null, allTags?: Tag[]) => {
   const payload: Record<string, string | boolean | string[] | null> = {
     name: formData.name,
     site: formData.site,
@@ -74,8 +74,21 @@ export const createPayloadFromFormData = (formData: PasswordFormData, editingId:
   if (formData.folder_id) {
     payload.folder_id = formData.folder_id;
   }
-  if (formData.tag_ids) {
-    payload.tag_ids = formData.tag_ids;
+
+  // Convert tag IDs to tag names for API
+  if (formData.tag_ids && formData.tag_ids.length > 0 && allTags) {
+    const tagNames = formData.tag_ids
+      .map(tagId => {
+        const tag = allTags.find(t => t.id === tagId);
+        return tag?.name;
+      })
+      .filter((name): name is string => typeof name === 'string');
+    if (tagNames.length > 0) {
+      payload.tags = tagNames;
+    }
+  } else if (formData.tag_ids && formData.tag_ids.length === 0) {
+    // Explicitly set empty tags array if no tags selected
+    payload.tags = [];
   }
 
   return payload;

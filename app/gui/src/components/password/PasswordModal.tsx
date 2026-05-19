@@ -3,6 +3,7 @@ import { Eye, EyeOff, RefreshCw } from 'lucide-react';
 import type { PasswordModalProps } from '../../types/password';
 import { Checkbox } from '../ui';
 import FolderSelector from './FolderSelector';
+import TagSelector from './TagSelector';
 
 const PasswordModal: React.FC<PasswordModalProps> = ({
   isOpen,
@@ -15,7 +16,9 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
   showPassword,
   onTogglePasswordVisibility,
   passwordStrength,
-  folders = []
+  folders = [],
+  tags = [],
+  onCreateTag
 }) => {
   if (!isOpen) return null;
 
@@ -148,6 +151,13 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
               folders={folders}
               selectedFolderId={formData.folder_id}
               onChange={(folderId) => onFormDataChange({ folder_id: folderId })}
+            />
+
+            <TagSelector
+              tags={tags}
+              selectedTagIds={formData.tag_ids || []}
+              onChange={(tagIds) => onFormDataChange({ tag_ids: tagIds })}
+              onCreateTag={onCreateTag}
             />
 
             <Checkbox

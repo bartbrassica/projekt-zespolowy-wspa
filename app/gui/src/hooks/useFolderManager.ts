@@ -90,10 +90,6 @@ export const useFolderManager = () => {
   };
 
   const deleteFolder = async (folderId: string): Promise<boolean> => {
-    if (!confirm('Are you sure you want to delete this folder? Passwords in this folder will not be deleted.')) {
-      return false;
-    }
-
     try {
       const response = await authApi.authenticatedFetch(`/api/passwords/folders/${folderId}`, {
         method: 'DELETE'
