@@ -1,3 +1,22 @@
+export interface Folder {
+  id: string;
+  name: string;
+  parent_id: string | null;
+  icon?: string;
+  color?: string;
+  entry_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  color?: string;
+  entry_count: number;
+  created_at: string;
+}
+
 export interface PasswordEntry {
   id: string;
   name: string;
@@ -5,9 +24,11 @@ export interface PasswordEntry {
   username: string;
   notes: string;
   is_favorite: boolean;
-  folder: string | null;
-  tags: string[];
+  folder: Folder | null;
+  tags: Tag[];
   expires_at: string | null;
+  is_expired: boolean;
+  days_until_expiry: number | null;
   created_at: string;
   updated_at: string;
   last_accessed: string | null;
@@ -79,6 +100,7 @@ export interface PasswordModalProps {
   showPassword: boolean;
   onTogglePasswordVisibility: () => void;
   passwordStrength: PasswordStrengthInfo;
+  folders?: Folder[];
 }
 
 export interface MasterPasswordModalProps {

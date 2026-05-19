@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { RefreshCw, Key, Shield } from 'lucide-react';
 import { filterPasswords, getPasswordStrength } from './utils/passwordUtils';
 import { Alert, SearchBar } from './components/ui';
-import { PasswordCard, PasswordModal, MasterPasswordModal } from './components/password';
+import { PasswordCard, PasswordModal, MasterPasswordModal, FolderSidebar } from './components/password';
 import {
   usePasswordManager,
   usePasswordForm,
   useMasterPassword,
-  usePasswordVisibility
+  usePasswordVisibility,
+  useFolderManager
 } from './hooks';
 import type { PasswordEntry, PasswordFormData } from './types/password';
 
@@ -15,6 +16,7 @@ const PasswordManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<PasswordEntry | null>(null);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(undefined);
 
   const {
     passwords,
@@ -59,6 +61,15 @@ const PasswordManager: React.FC = () => {
     isPasswordVisible
   } = usePasswordVisibility();
 
+  const {
+    folders,
+    error: foldersError,
+    createFolder,
+    deleteFolder,
+    clearError: clearFoldersError,
+    fetchFolders
+  } = useFolderManager();
+
   const handleGeneratePassword = async () => {
     const password = await generatePassword();
     if (password) {
@@ -67,10 +78,14 @@ const PasswordManager: React.FC = () => {
   };
 
   const handleSubmit = async (formData: PasswordFormData) => {
+    // If no master password in form data, check if we need to request it
     if (!formData.master_password) {
-      if (requestMasterPassword({ type: 'submit', data: formData })) {
+      // If we don't have a master password in state, show the modal
+      if (!requestMasterPassword({ type: 'submit', data: formData })) {
         return;
       }
+      // If we have it in state, use it
+      formData = { ...formData, master_password: masterPassword };
     }
 
     const success = await savePassword(formData, editingEntry?.id || null);
@@ -78,6 +93,8 @@ const PasswordManager: React.FC = () => {
       setShowModal(false);
       setEditingEntry(null);
       resetForm(masterPassword);
+      // Reload folders to update counts
+      await fetchFolders();
     }
   };
 
@@ -117,7 +134,11 @@ const PasswordManager: React.FC = () => {
       return;
     }
 
-    await deletePassword(entryId, masterPassword);
+    const success = await deletePassword(entryId, masterPassword);
+    if (success) {
+      // Reload folders to update counts
+      await fetchFolders();
+    }
   };
 
   const handleToggleFavorite = async (entry: PasswordEntry) => {
@@ -135,7 +156,10 @@ const PasswordManager: React.FC = () => {
     if (action && action.data) {
       switch (action.type) {
         case 'submit':
-          handleSubmit({ ...formData, master_password: password });
+          // Use the formData that was saved in the pending action, not current state
+          if (typeof action.data === 'object' && 'name' in action.data) {
+            handleSubmit({ ...(action.data as PasswordFormData), master_password: password });
+          }
           break;
         case 'decrypt':
           if (typeof action.data === 'string') {
@@ -183,12 +207,40 @@ const PasswordManager: React.FC = () => {
     }
   };
 
-  const filteredPasswords = filterPasswords(passwords, searchQuery);
+  const handleFolderCreate = async (name: string, icon?: string, color?: string) => {
+    await createFolder(name, undefined, icon, color);
+  };
+
+  const handleFolderDelete = async (folderId: string) => {
+    await deleteFolder(folderId);
+  };
+
+  const handleFolderSelect = (folderId: string | undefined) => {
+    setSelectedFolderId(folderId);
+  };
+
+  // Filter passwords by search query and selected folder
+  let filteredPasswords = filterPasswords(passwords, searchQuery);
+  if (selectedFolderId) {
+    filteredPasswords = filteredPasswords.filter(p => p.folder?.id === selectedFolderId);
+  }
+
   const passwordStrength = getPasswordStrength(formData.password);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="h-screen bg-gray-50 dark:bg-gray-900 flex overflow-hidden">
+      {/* Folder Sidebar */}
+      <FolderSidebar
+        folders={folders}
+        selectedFolderId={selectedFolderId}
+        onSelectFolder={handleFolderSelect}
+        onCreateFolder={handleFolderCreate}
+        onDeleteFolder={handleFolderDelete}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 min-w-0 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
@@ -203,6 +255,7 @@ const PasswordManager: React.FC = () => {
         {/* Alerts */}
         {error && <Alert type="error" message={error} onClose={clearError} />}
         {success && <Alert type="success" message={success} onClose={clearSuccess} />}
+        {foldersError && <Alert type="error" message={foldersError} onClose={clearFoldersError} />}
 
         {/* Search and Actions Bar */}
         <SearchBar
@@ -256,6 +309,7 @@ const PasswordManager: React.FC = () => {
           showPassword={formShowPassword['form'] || false}
           onTogglePasswordVisibility={() => toggleFormPasswordVisibility('form')}
           passwordStrength={passwordStrength}
+          folders={folders}
         />
 
         {/* Master Password Modal */}
@@ -266,6 +320,7 @@ const PasswordManager: React.FC = () => {
           masterPassword={masterPassword}
           onMasterPasswordChange={setMasterPassword}
         />
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AlertCircle, Shield } from 'lucide-react';
 import type { AlertProps } from '../../types/password';
 
 const Alert: React.FC<AlertProps> = ({ type, message, onClose }) => {
   const isError = type === 'error';
+
+  useEffect(() => {
+    // Auto-dismiss after 5 seconds
+    const timer = setTimeout(() => {
+      onClose();
+    }, 5000);
+
+    // Cleanup timer if component unmounts
+    return () => clearTimeout(timer);
+  }, [onClose]);
 
   const bgColor = isError
     ? 'bg-red-50 dark:bg-red-900/20'

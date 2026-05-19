@@ -8,7 +8,8 @@ import {
   Eye,
   EyeOff,
   Edit,
-  Trash2
+  Trash2,
+  Folder
 } from 'lucide-react';
 import type { PasswordCardProps } from '../../types/password';
 import { getSiteHostname, formatDate } from '../../utils/passwordUtils';
@@ -65,6 +66,16 @@ const PasswordCard: React.FC<PasswordCardProps> = ({
           <span className="font-medium">Username:</span>
           <span className="truncate">{entry.username || 'N/A'}</span>
         </div>
+
+        {entry.folder && (
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <Folder className="h-4 w-4" />
+            <span className="truncate">
+              {entry.folder.icon && `${entry.folder.icon} `}
+              {entry.folder.name}
+            </span>
+          </div>
+        )}
 
         {entry.expires_at && (
           <div className="flex items-center gap-2 text-sm">

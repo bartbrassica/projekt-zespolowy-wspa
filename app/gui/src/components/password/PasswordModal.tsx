@@ -2,6 +2,7 @@ import React from 'react';
 import { Eye, EyeOff, RefreshCw } from 'lucide-react';
 import type { PasswordModalProps } from '../../types/password';
 import { Checkbox } from '../ui';
+import FolderSelector from './FolderSelector';
 
 const PasswordModal: React.FC<PasswordModalProps> = ({
   isOpen,
@@ -13,7 +14,8 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
   onFormDataChange,
   showPassword,
   onTogglePasswordVisibility,
-  passwordStrength
+  passwordStrength,
+  folders = []
 }) => {
   if (!isOpen) return null;
 
@@ -141,6 +143,12 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
+
+            <FolderSelector
+              folders={folders}
+              selectedFolderId={formData.folder_id}
+              onChange={(folderId) => onFormDataChange({ folder_id: folderId })}
+            />
 
             <Checkbox
               id="favorite"
