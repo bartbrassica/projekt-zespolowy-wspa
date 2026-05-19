@@ -24,3 +24,4 @@ export { useChangePassword } from './useChangePassword';
 export { useFolderManager } from './useFolderManager';
 export { useTagManager } from './useTagManager';
 export { useConfirmDialog } from './useConfirmDialog';
+export { useShareLinks } from './useShareLinks';

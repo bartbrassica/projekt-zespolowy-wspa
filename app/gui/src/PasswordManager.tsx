@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { RefreshCw, Key, Shield } from 'lucide-react';
 import { filterPasswords, getPasswordStrength } from './utils/passwordUtils';
 import { Alert, SearchBar, ConfirmDialog } from './components/ui';
-import { PasswordCard, PasswordModal, MasterPasswordModal, FolderSidebar } from './components/password';
+import { PasswordCard, PasswordModal, MasterPasswordModal, FolderSidebar, ShareModal } from './components/password';
 import {
   usePasswordManager,
   usePasswordForm,
@@ -20,6 +20,8 @@ const PasswordManager: React.FC = () => {
   const [editingEntry, setEditingEntry] = useState<PasswordEntry | null>(null);
   const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(undefined);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [sharingEntry, setSharingEntry] = useState<PasswordEntry | null>(null);
 
   const {
     passwords,
@@ -284,6 +286,21 @@ const PasswordManager: React.FC = () => {
     );
   };
 
+  const handleShare = (entry: PasswordEntry) => {
+    setSharingEntry(entry);
+    setShowShareModal(true);
+  };
+
+  const handleCloseShareModal = () => {
+    setShowShareModal(false);
+    setSharingEntry(null);
+  };
+
+  const handleCreateShareLink = () => {
+    // Share link created successfully - the ShareModal handles the display
+    // No additional action needed here
+  };
+
   // Filter passwords by search query, selected folder, and selected tags
   let filteredPasswords = filterPasswords(passwords, searchQuery);
   if (selectedFolderId) {
@@ -368,6 +385,7 @@ const PasswordManager: React.FC = () => {
                 onToggleVisibility={handleToggleVisibility}
                 onEdit={handleEditPassword}
                 onDelete={handleDelete}
+                onShare={handleShare}
               />
             ))}
           </div>
@@ -410,6 +428,16 @@ const PasswordManager: React.FC = () => {
           cancelText={dialogState.cancelText}
           type={dialogState.type}
         />
+
+        {/* Share Modal */}
+        {sharingEntry && (
+          <ShareModal
+            isOpen={showShareModal}
+            onClose={handleCloseShareModal}
+            passwordEntry={sharingEntry}
+            onCreateShareLink={handleCreateShareLink}
+          />
+        )}
         </div>
       </div>
     </div>

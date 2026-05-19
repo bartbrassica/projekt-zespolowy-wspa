@@ -10,7 +10,8 @@ import {
   Edit,
   Trash2,
   Folder,
-  Tag
+  Tag,
+  Share2
 } from 'lucide-react';
 import type { PasswordCardProps } from '../../types/password';
 import { getSiteHostname, formatDate } from '../../utils/passwordUtils';
@@ -23,7 +24,8 @@ const PasswordCard: React.FC<PasswordCardProps> = ({
   onCopyPassword,
   onToggleVisibility,
   onEdit,
-  onDelete
+  onDelete,
+  onShare
 }) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-shadow">
@@ -132,6 +134,13 @@ const PasswordCard: React.FC<PasswordCardProps> = ({
           className="px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
         >
           <Edit className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => onShare(entry)}
+          className="px-3 py-1.5 text-sm bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+          title="Share password"
+        >
+          <Share2 className="h-4 w-4" />
         </button>
         <button
           onClick={() => onDelete(entry.id)}

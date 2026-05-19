@@ -81,6 +81,7 @@ export interface PasswordCardProps {
   onToggleVisibility: (entryId: string) => void;
   onEdit: (entry: PasswordEntry) => void;
   onDelete: (entryId: string) => void;
+  onShare: (entry: PasswordEntry) => void;
 }
 
 export interface SearchBarProps {
@@ -111,4 +112,47 @@ export interface MasterPasswordModalProps {
   onSubmit: (password: string) => void;
   masterPassword: string;
   onMasterPasswordChange: (password: string) => void;
+}
+
+export interface ShareLinkFormData {
+  password_entry_id: string;
+  master_password: string;
+  max_views: number;
+  expires_in_hours: number;
+  require_authentication: boolean;
+  allowed_email?: string;
+}
+
+export interface ShareLink {
+  id: string;
+  share_url: string;
+  max_views: number;
+  current_views: number;
+  expires_at: string;
+  require_authentication: boolean;
+  allowed_email?: string;
+  created_at: string;
+}
+
+export interface SharedPasswordData {
+  name: string;
+  site: string;
+  username: string;
+  encrypted_password: string;
+  encryption_salt: string;
+  views_remaining: number;
+  expires_at: string;
+}
+
+export interface ShareModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  passwordEntry: PasswordEntry;
+  onCreateShareLink: (formData: ShareLinkFormData) => void;
+}
+
+export interface ShareLinkCardProps {
+  shareLink: ShareLink;
+  onRevoke: (linkId: string) => void;
+  onCopyLink: (url: string) => void;
 }

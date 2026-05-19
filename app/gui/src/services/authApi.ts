@@ -1,5 +1,5 @@
 import type { LoginCredentials, AuthTokens } from '../types/auth';
-import type { Tag } from '../types/password';
+import type { Tag, ShareLinkFormData, ShareLink, SharedPasswordData } from '../types/password';
 
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<AuthTokens> {
@@ -78,5 +78,31 @@ export const authApi = {
     if (!response.ok) {
       throw new Error('Failed to delete tag');
     }
+  },
+
+  // Share link management
+  async createShareLink(formData: ShareLinkFormData): Promise<ShareLink> {
+    const response = await authApi.authenticatedFetch('/api/passwords/share', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to create share link');
+    }
+    return response.json();
+  },
+
+  async getSharedPassword(shareToken: string): Promise<SharedPasswordData> {
+    // Public endpoint - no authentication required
+    const response = await fetch(`/api/passwords/shared/${shareToken}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to access shared password');
+    }
+    return response.json();
   }
 };

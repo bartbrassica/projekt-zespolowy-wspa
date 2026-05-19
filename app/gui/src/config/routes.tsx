@@ -10,6 +10,7 @@ import Layout from '../Layout';
 import PasswordManager from '../PasswordManager';
 import SettingsPage from '../components/pages/SettingsPage';
 import ProtectedRoute from '../components/routing/ProtectedRoute';
+import SharedPasswordView from '../SharedPasswordView';
 
 export const createRouteElement = (Component: React.ComponentType, isProtected = false, withLayout = false) => {
   let element = <Component />;
@@ -37,6 +38,10 @@ export const publicRoutes = [
   {
     path: '/reset-password',
     element: <ResetPassword />
+  },
+  {
+    path: '/share/:shareToken',
+    element: <SharedPasswordView />
   },
   {
     path: '/signup',
