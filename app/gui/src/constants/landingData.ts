@@ -5,7 +5,7 @@ export const FEATURES: Feature[] = [
   {
     icon: Lock,
     title: "Military-Grade Encryption",
-    desc: "AES-256 encryption keeps your data secure",
+    desc: "PBKDF2 + AES-128 encryption keeps your data secure",
     color: "from-purple-500 to-purple-600"
   },
   {
