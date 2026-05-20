@@ -8,6 +8,8 @@ import json
 import csv
 import io
 import base64
+import secrets
+import string
 from typing import Any
 
 from .endpoints import auth_jwt, get_user_from_auth
@@ -45,6 +47,7 @@ from .schemas import (
 from .db_utils import convert_salt_to_bytes, log_password_access
 from .consts import PasswordManagerConstants
 from .encryption_service import encryption_service
+from .config import config
 
 password_router = Router(tags=["Password Manager"])
 
@@ -712,11 +715,22 @@ def create_share_link(
         if not decrypted:
             raise HttpError(400, "Failed to decrypt password")
 
+        # Generate a random encryption key for sharing (64 chars for security)
+        alphabet = string.ascii_letters + string.digits + string.punctuation
+        random_key = ''.join(secrets.choice(alphabet) for _ in range(64))
+
+        # Encrypt the password with the random key for secure storage
+        encrypted_for_share, share_salt = encryption_service.encrypt_password(
+            decrypted, random_key
+        )
+
         expires_at = timezone.now() + timezone.timedelta(hours=data.expires_in_hours)
 
         share_link = PasswordShareLink.objects.create(
             password_entry=entry,
             created_by=user,
+            encrypted_password_share=encrypted_for_share,
+            share_encryption_salt=share_salt,
             max_views=data.max_views,
             expires_at=expires_at,
             require_authentication=data.require_authentication,
@@ -724,7 +738,8 @@ def create_share_link(
         )
 
         log_password_access(entry, user, "share", request)
-        share_url = f"{request.build_absolute_uri('/api/passwords/shared/')}{share_link.share_token}"
+        # Include encryption key in URL fragment (never sent to server)
+        share_url = f"{config.FRONTEND_URL}/share/{share_link.share_token}#{base64.urlsafe_b64encode(random_key.encode()).decode()}"
 
         return 201, {
             "id": str(share_link.id),
@@ -763,6 +778,8 @@ def access_shared_password(request: HttpRequest, share_token: str) -> dict[str, 
             "name": entry.name,
             "site": entry.site,
             "username": entry.username,
+            "encrypted_password": share_link.encrypted_password_share,
+            "encryption_salt": base64.b64encode(share_link.share_encryption_salt).decode(),
             "views_remaining": share_link.max_views - share_link.current_views,
             "expires_at": share_link.expires_at,
         }

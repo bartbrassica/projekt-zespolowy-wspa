@@ -359,6 +359,8 @@ class PasswordShareLink(models.Model):
     )
 
     share_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    encrypted_password_share = models.TextField()
+    share_encryption_salt = models.BinaryField(max_length=32)
     max_views = models.IntegerField(default=1)
     current_views = models.IntegerField(default=0)
     expires_at = models.DateTimeField()
