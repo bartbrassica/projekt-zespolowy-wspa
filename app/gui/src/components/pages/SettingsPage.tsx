@@ -1,6 +1,8 @@
 import React from 'react';
 import { Settings } from 'lucide-react';
 import ChangePasswordForm from '../settings/ChangePasswordForm';
+import ExportPasswordsCard from '../settings/ExportPasswordsCard';
+import ImportPasswordsCard from '../settings/ImportPasswordsCard';
 
 const SettingsPage: React.FC = () => {
   return (
@@ -25,6 +27,17 @@ const SettingsPage: React.FC = () => {
               Account Security
             </h2>
             <ChangePasswordForm />
+          </div>
+
+          {/* Data Management Section */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Data Management
+            </h2>
+            <div className="space-y-6">
+              <ImportPasswordsCard />
+              <ExportPasswordsCard />
+            </div>
           </div>
         </div>
       </div>

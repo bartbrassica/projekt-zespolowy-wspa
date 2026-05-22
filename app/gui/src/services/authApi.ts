@@ -104,5 +104,45 @@ export const authApi = {
       throw new Error(errorData.message || 'Failed to access shared password');
     }
     return response.json();
+  },
+
+  // Export passwords
+  async exportPasswords(masterPassword: string, format: 'csv' | 'json' | 'xlsx' = 'xlsx', includePasswords: boolean = true): Promise<{ format: string; data: string; filename: string }> {
+    const response = await authApi.authenticatedFetch('/api/passwords/export', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        format,
+        master_password: masterPassword,
+        include_passwords: includePasswords,
+      }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to export passwords');
+    }
+    return response.json();
+  },
+
+  // Import passwords
+  async importPasswords(masterPassword: string, fileData: string, format: 'csv' | 'json' | 'xlsx' = 'xlsx'): Promise<{ message: string }> {
+    const response = await authApi.authenticatedFetch('/api/passwords/import', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        format,
+        master_password: masterPassword,
+        data: fileData,
+      }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || errorData.message || 'Failed to import passwords');
+    }
+    return response.json();
   }
 };
