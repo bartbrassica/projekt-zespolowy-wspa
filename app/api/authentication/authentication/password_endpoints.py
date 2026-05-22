@@ -11,6 +11,9 @@ import base64
 import secrets
 import string
 from typing import Any
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
 
 from .endpoints import auth_jwt, get_user_from_auth
 from .utils import verify_master_password
@@ -564,11 +567,62 @@ def import_passwords(
         raise HttpError(400, "Invalid master password")
 
     try:
-        file_content = base64.b64decode(data.data).decode("utf-8")
-
         imported_count = 0
 
-        if data.format == "csv":
+        if data.format == "xlsx":
+            # Decode base64 to bytes for XLSX
+            file_bytes = base64.b64decode(data.data)
+            wb = load_workbook(io.BytesIO(file_bytes))
+            ws = wb.active
+
+            # Get headers from first row
+            headers = []
+            for cell in ws[1]:
+                if cell.value:
+                    headers.append(cell.value.lower())
+
+            # Validate required headers
+            if "name" not in headers or "password" not in headers:
+                raise HttpError(400, "XLSX file must contain 'Name' and 'Password' columns")
+
+            # Process data rows (starting from row 2)
+            for row_idx in range(2, ws.max_row + 1):
+                row_data = {}
+                for col_idx, header in enumerate(headers, start=1):
+                    cell_value = ws.cell(row=row_idx, column=col_idx).value
+                    row_data[header] = str(cell_value) if cell_value is not None else ""
+
+                # Skip rows without required fields
+                if not row_data.get("name") or not row_data.get("password"):
+                    continue
+
+                # Skip duplicates
+                site_value = row_data.get("url", "") or row_data.get("site", "")
+                if PasswordEntry.objects.filter(
+                    user=user,
+                    name=row_data["name"],
+                    site=site_value,
+                ).exists():
+                    continue
+
+                # Encrypt and create entry
+                encrypted_password, salt = encryption_service.encrypt_password(
+                    row_data["password"], data.master_password
+                )
+                PasswordEntry.objects.create(
+                    user=user,
+                    name=row_data["name"],
+                    site=site_value,
+                    username=row_data.get("username", "") or row_data.get("email", ""),
+                    encrypted_password=encrypted_password,
+                    encryption_salt=salt,
+                    notes=row_data.get("notes", ""),
+                )
+                imported_count += 1
+
+        elif data.format == "csv":
+            # Decode as UTF-8 for text formats
+            file_content = base64.b64decode(data.data).decode("utf-8")
             reader = csv.DictReader(io.StringIO(file_content))
             for row in reader:
                 if not row.get("name") or not row.get("password"):
@@ -595,6 +649,8 @@ def import_passwords(
                 imported_count += 1
 
         elif data.format == "json":
+            # Decode as UTF-8 for text formats
+            file_content = base64.b64decode(data.data).decode("utf-8")
             entries = json.loads(file_content)
             if not isinstance(entries, list):
                 entries = [entries]
@@ -626,6 +682,9 @@ def import_passwords(
 
         return {"message": f"Successfully imported {imported_count} passwords"}
 
+    except HttpError:
+        # Re-raise HttpError as-is (for validation errors)
+        raise
     except Exception as e:
         raise HttpError(400, f"Import failed: {str(e)}")
 
@@ -689,6 +748,53 @@ def export_passwords(
             "format": "csv",
             "data": base64.b64encode(output.getvalue().encode()).decode(),
             "filename": "passwords_export.csv",
+        }
+
+    elif data.format == "xlsx":
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Passwords"
+
+        # Define header style
+        header_fill = PatternFill(start_color="4F46E5", end_color="4F46E5", fill_type="solid")
+        header_font = Font(bold=True, color="FFFFFF", size=12)
+        header_alignment = Alignment(horizontal="center", vertical="center")
+
+        if export_data:
+            # Write headers
+            headers = list(export_data[0].keys())
+            for col_idx, header in enumerate(headers, start=1):
+                cell = ws.cell(row=1, column=col_idx, value=header.title())
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = header_alignment
+
+            # Write data rows
+            for row_idx, entry in enumerate(export_data, start=2):
+                for col_idx, header in enumerate(headers, start=1):
+                    ws.cell(row=row_idx, column=col_idx, value=entry.get(header, ""))
+
+            # Auto-adjust column widths
+            for col_idx, header in enumerate(headers, start=1):
+                max_length = len(header.title())
+                for row in ws.iter_rows(min_col=col_idx, max_col=col_idx, min_row=2):
+                    try:
+                        cell_value = str(row[0].value) if row[0].value else ""
+                        max_length = max(max_length, len(cell_value))
+                    except:
+                        pass
+                # Set column width with some padding
+                ws.column_dimensions[get_column_letter(col_idx)].width = min(max_length + 2, 50)
+
+        # Save to bytes buffer
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        return {
+            "format": "xlsx",
+            "data": base64.b64encode(output.getvalue()).decode(),
+            "filename": "passwords_export.xlsx",
         }
 
     else:

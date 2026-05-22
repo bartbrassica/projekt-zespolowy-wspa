@@ -354,9 +354,9 @@ class MasterPasswordChangeRequest(Schema):
 
 
 class PasswordImportRequest(Schema):
-    """Schema for importing passwords from CSV/JSON."""
+    """Schema for importing passwords from CSV/JSON/XLSX."""
 
-    format: str = Field(..., pattern="^(csv|json|bitwarden|lastpass|1password)$")
+    format: str = Field(..., pattern="^(csv|json|xlsx|bitwarden|lastpass|1password)$")
     data: str = Field(..., description="Base64 encoded file data")
     master_password: str = Field(
         ..., description="User's master password for encryption"
@@ -366,7 +366,7 @@ class PasswordImportRequest(Schema):
 class PasswordExportRequest(Schema):
     """Schema for exporting passwords."""
 
-    format: str = Field(..., pattern="^(csv|json|pdf)$")
+    format: str = Field(..., pattern="^(csv|json|pdf|xlsx)$")
     master_password: str = Field(
         ..., description="User's master password for decryption"
     )
