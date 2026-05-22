@@ -9,7 +9,7 @@ A secure password management REST API built with Django and Django Ninja, featur
 - **Database**: PostgreSQL
 - **Authentication**: JWT (ES512 algorithm)
 - **Password Hashing**: Argon2
-- **Encryption**: AES-256-GCM with client-side encryption
+- **Encryption**: PBKDF2-HMAC-SHA256 (200,000 iterations) + Fernet (AES-128-CBC) with master password-based encryption
 - **Package Manager**: uv
 
 ## Features
@@ -78,7 +78,10 @@ EMAIL_HOST_PASSWORD=your-app-password
 DEFAULT_FROM_EMAIL=your-email@gmail.com
 
 # Frontend Configuration
-FRONTEND_URL=http://localhost:5173
+# For Docker deployment (default)
+FRONTEND_URL=http://localhost:3000
+# For local development with Vite dev server, use:
+# FRONTEND_URL=http://localhost:5173
 ```
 
 **Important**:
@@ -181,8 +184,8 @@ Once the server is running, visit:
 - `GET /api/passwords/{id}` - Get specific password
 - `PUT /api/passwords/{id}` - Update password
 - `DELETE /api/passwords/{id}` - Delete password
-- `POST /api/passwords/share` - Share password with another user
-- `GET /api/passwords/shared` - Get shared passwords
+- `POST /api/passwords/share` - Create a shareable link for a password
+- `GET /api/passwords/shared/{share_token}` - Access a shared password (public endpoint)
 
 ### User Management
 
@@ -194,10 +197,11 @@ Once the server is running, visit:
 
 ### Encryption
 
-- Client-side encryption using AES-256-GCM
-- Passwords are encrypted before being sent to the server
-- Server stores only encrypted data
-- Encryption keys derived from user's master password
+- Master password-based encryption using PBKDF2-HMAC-SHA256 (200,000 iterations) + Fernet (AES-128-CBC + HMAC-SHA256)
+- Passwords transmitted securely via HTTPS and encrypted on the server
+- Server encrypts passwords with your master password but never stores it (zero-knowledge architecture)
+- Each password entry has a unique salt for key derivation
+- Server cannot decrypt passwords without your master password
 
 ### Authentication
 
@@ -233,6 +237,7 @@ See the main project README for full Docker Compose setup.
 ```env
 DEBUG=True
 EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+# Use Vite dev server port for local development
 FRONTEND_URL=http://localhost:5173
 ```
 
