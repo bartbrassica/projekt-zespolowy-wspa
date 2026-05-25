@@ -116,14 +116,7 @@ def list_password_entries(
     limit: int | None = None,
     offset: int | None = None,
 ) -> list:
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.error(f"[DEBUG LIST_ENTRIES] Called with params: query={query}, folder_id={folder_id}, tags={tags}, show_expired={show_expired}, show_favorites_only={show_favorites_only}, sort_by={sort_by}, sort_order={sort_order}, limit={limit}, offset={offset}")
-    logger.error(f"[DEBUG LIST_ENTRIES] Request type: {type(request)}, Request: {request}")
-    logger.error(f"[DEBUG LIST_ENTRIES] Request auth: {request.auth}")
-
     user = get_user_from_auth(request.auth)
-    logger.error(f"[DEBUG LIST_ENTRIES] User: {user}")
 
     entries = (
         PasswordEntry.objects.filter(user=user)

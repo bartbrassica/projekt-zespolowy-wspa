@@ -199,6 +199,7 @@ Once the server is running, visit:
 
 - Master password-based encryption using PBKDF2-HMAC-SHA256 (200,000 iterations) + Fernet (AES-128-CBC + HMAC-SHA256)
 - Passwords transmitted securely via HTTPS and encrypted on the server
+- Server encrypts passwords with your master password but never stores it (zero-knowledge architecture)
 - Each password entry has a unique salt for key derivation
 - Server cannot decrypt passwords without your master password
 
