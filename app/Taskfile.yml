@@ -120,7 +120,7 @@ tasks:
       - "{{.COMPOSE}} up -d db"
       - echo "Waiting for database..."
       - sleep 10
-      - "{{.COMPOSE}} {{.TEST_PROFILE}} run --rm {{.TEST_SERVICE}} sh -c 'cd /app/authentication && python manage.py migrate --noinput && pytest -n auto -v --cov=authentication --cov-config=../.coveragerc --cov-report=xml --cov-report=term'"
+      - "{{.COMPOSE}} {{.TEST_PROFILE}} run --rm {{.TEST_SERVICE}} sh -c 'cd /app && uv run python authentication/manage.py migrate --noinput && uv run pytest -n auto -v --cov=authentication --cov-config=.coveragerc --cov-report=xml --cov-report=term'"
       - "{{.COMPOSE}} down"
 
   # Development helpers
@@ -137,12 +137,12 @@ tasks:
   migrate:
     desc: Run database migrations
     cmds:
-      - "{{.COMPOSE}} exec api python authentication/manage.py migrate"
+      - "{{.COMPOSE}} exec api uv run python authentication/manage.py migrate"
 
   makemigrations:
     desc: Create new migrations
     cmds:
-      - "{{.COMPOSE}} exec api python authentication/manage.py makemigrations"
+      - "{{.COMPOSE}} exec api uv run python authentication/manage.py makemigrations"
 
   # Coverage report viewing
   coverage-report:
