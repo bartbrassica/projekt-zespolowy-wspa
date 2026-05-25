@@ -200,7 +200,6 @@ class PasswordEntryIn(Schema):
     tags: list[str] | None = []
     is_favorite: bool = False
 
-    # Master password for encryption
     master_password: str = Field(
         ..., description="User's master password for encryption"
     )
@@ -219,7 +218,6 @@ class PasswordEntryUpdate(Schema):
     tags: list[str] | None = None
     is_favorite: bool | None = None
 
-    # Master password required for re-encryption if password changes
     master_password: str = Field(
         ..., description="User's master password for encryption"
     )
@@ -256,7 +254,6 @@ class PasswordEntryOut(Schema):
         """Convert HttpUrl object to string."""
         if v is None:
             return None
-        # If it's an HttpUrl object, convert to string
         if hasattr(v, "__str__"):
             return str(v)
         return v

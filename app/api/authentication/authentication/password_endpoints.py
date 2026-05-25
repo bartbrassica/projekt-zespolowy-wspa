@@ -131,7 +131,6 @@ def list_password_entries(
         .prefetch_related("tags")
     )
 
-    # Handle query parameter
     if query:
         entries = entries.filter(
             Q(name__icontains=query)
@@ -140,33 +139,27 @@ def list_password_entries(
             | Q(notes__icontains=query)
         )
 
-    # Handle folder_id
     if folder_id:
         entries = entries.filter(folder_id=folder_id)
 
-    # Handle tags filtering
     if tags:
         tag_list = [tag.strip() for tag in tags.split(',')]
         for tag in tag_list:
             entries = entries.filter(tags__name=tag)
 
-    # Handle show_expired (default to False if not specified)
     if show_expired is None or not show_expired:
         entries = entries.filter(
             Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now())
         )
 
-    # Handle show_favorites_only
     if show_favorites_only:
         entries = entries.filter(is_favorite=True)
 
-    # Handle sort_by (default to updated_at)
     if sort_by is None:
         sort_by = "updated_at"
     if sort_by not in PasswordManagerConstants.VALID_SORT_FIELDS.value:
         sort_by = PasswordManagerConstants.DEFAULT_SORT_FIELD.value
 
-    # Handle sort_order (default to desc)
     if sort_order is None:
         sort_order = "desc"
 
@@ -175,7 +168,6 @@ def list_password_entries(
         order_field = f"-{order_field}"
     entries = entries.order_by(order_field)
 
-    # Handle pagination (defaults: limit=50, offset=0)
     if limit is None:
         limit = 50
     if offset is None:
@@ -195,7 +187,6 @@ def bulk_delete_entries(
     if not verify_master_password(user, data.master_password):
         raise HttpError(400, "Invalid master password")
 
-    # Filter out invalid UUIDs to prevent ValidationError
     from django.core.exceptions import ValidationError
     import uuid
 
@@ -570,33 +561,27 @@ def import_passwords(
         imported_count = 0
 
         if data.format == "xlsx":
-            # Decode base64 to bytes for XLSX
             file_bytes = base64.b64decode(data.data)
             wb = load_workbook(io.BytesIO(file_bytes))
             ws = wb.active
 
-            # Get headers from first row
             headers = []
             for cell in ws[1]:
                 if cell.value:
                     headers.append(cell.value.lower())
 
-            # Validate required headers
             if "name" not in headers or "password" not in headers:
                 raise HttpError(400, "XLSX file must contain 'Name' and 'Password' columns")
 
-            # Process data rows (starting from row 2)
             for row_idx in range(2, ws.max_row + 1):
                 row_data = {}
                 for col_idx, header in enumerate(headers, start=1):
                     cell_value = ws.cell(row=row_idx, column=col_idx).value
                     row_data[header] = str(cell_value) if cell_value is not None else ""
 
-                # Skip rows without required fields
                 if not row_data.get("name") or not row_data.get("password"):
                     continue
 
-                # Skip duplicates
                 site_value = row_data.get("url", "") or row_data.get("site", "")
                 if PasswordEntry.objects.filter(
                     user=user,
@@ -605,7 +590,6 @@ def import_passwords(
                 ).exists():
                     continue
 
-                # Encrypt and create entry
                 encrypted_password, salt = encryption_service.encrypt_password(
                     row_data["password"], data.master_password
                 )
@@ -621,7 +605,6 @@ def import_passwords(
                 imported_count += 1
 
         elif data.format == "csv":
-            # Decode as UTF-8 for text formats
             file_content = base64.b64decode(data.data).decode("utf-8")
             reader = csv.DictReader(io.StringIO(file_content))
             for row in reader:
@@ -649,7 +632,6 @@ def import_passwords(
                 imported_count += 1
 
         elif data.format == "json":
-            # Decode as UTF-8 for text formats
             file_content = base64.b64decode(data.data).decode("utf-8")
             entries = json.loads(file_content)
             if not isinstance(entries, list):
@@ -683,7 +665,6 @@ def import_passwords(
         return {"message": f"Successfully imported {imported_count} passwords"}
 
     except HttpError:
-        # Re-raise HttpError as-is (for validation errors)
         raise
     except Exception as e:
         raise HttpError(400, f"Import failed: {str(e)}")
@@ -755,13 +736,11 @@ def export_passwords(
         ws = wb.active
         ws.title = "Passwords"
 
-        # Define header style
         header_fill = PatternFill(start_color="4F46E5", end_color="4F46E5", fill_type="solid")
         header_font = Font(bold=True, color="FFFFFF", size=12)
         header_alignment = Alignment(horizontal="center", vertical="center")
 
         if export_data:
-            # Write headers
             headers = list(export_data[0].keys())
             for col_idx, header in enumerate(headers, start=1):
                 cell = ws.cell(row=1, column=col_idx, value=header.title())
@@ -769,12 +748,10 @@ def export_passwords(
                 cell.font = header_font
                 cell.alignment = header_alignment
 
-            # Write data rows
             for row_idx, entry in enumerate(export_data, start=2):
                 for col_idx, header in enumerate(headers, start=1):
                     ws.cell(row=row_idx, column=col_idx, value=entry.get(header, ""))
 
-            # Auto-adjust column widths
             for col_idx, header in enumerate(headers, start=1):
                 max_length = len(header.title())
                 for row in ws.iter_rows(min_col=col_idx, max_col=col_idx, min_row=2):
@@ -783,10 +760,8 @@ def export_passwords(
                         max_length = max(max_length, len(cell_value))
                     except:
                         pass
-                # Set column width with some padding
                 ws.column_dimensions[get_column_letter(col_idx)].width = min(max_length + 2, 50)
 
-        # Save to bytes buffer
         output = io.BytesIO()
         wb.save(output)
         output.seek(0)
@@ -821,11 +796,9 @@ def create_share_link(
         if not decrypted:
             raise HttpError(400, "Failed to decrypt password")
 
-        # Generate a random encryption key for sharing (64 chars for security)
         alphabet = string.ascii_letters + string.digits + string.punctuation
         random_key = ''.join(secrets.choice(alphabet) for _ in range(64))
 
-        # Encrypt the password with the random key for secure storage
         encrypted_for_share, share_salt = encryption_service.encrypt_password(
             decrypted, random_key
         )
@@ -844,7 +817,6 @@ def create_share_link(
         )
 
         log_password_access(entry, user, "share", request)
-        # Include encryption key in URL fragment (never sent to server)
         share_url = f"{config.FRONTEND_URL}/share/{share_link.share_token}#{base64.urlsafe_b64encode(random_key.encode()).decode()}"
 
         return 201, {

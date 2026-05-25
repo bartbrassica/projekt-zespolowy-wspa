@@ -260,7 +260,6 @@ class PasswordExpirationManager:
         """
         notifications_sent = 0
 
-        # Process 3-day warnings
         passwords_3_days = PasswordExpirationManager.get_passwords_expiring_in_days(
             PasswordExpirationConstants.WARNING_DAYS_3.value
         )
@@ -268,7 +267,6 @@ class PasswordExpirationManager:
             passwords_3_days, PasswordExpirationConstants.NOTIFICATION_TYPE_3_DAYS.value
         )
 
-        # Process 1-day warnings
         passwords_1_day = PasswordExpirationManager.get_passwords_expiring_in_days(
             PasswordExpirationConstants.WARNING_DAYS_1.value
         )
@@ -276,7 +274,6 @@ class PasswordExpirationManager:
             passwords_1_day, PasswordExpirationConstants.NOTIFICATION_TYPE_1_DAY.value
         )
 
-        # Process expired passwords
         expired_passwords = PasswordExpirationManager.get_expired_passwords()
         notifications_sent += PasswordExpirationManager._process_notification_batch(
             expired_passwords,

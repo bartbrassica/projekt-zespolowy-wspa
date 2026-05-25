@@ -170,7 +170,6 @@ def terminate_user_session(user: User, session_id: str) -> bool:
         session.save(update_fields=["is_active"])
         return True
     except (UserSession.DoesNotExist, ValueError):
-        # ValueError occurs when session_id is not a valid integer
         return False
 
 

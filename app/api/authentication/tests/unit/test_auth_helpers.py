@@ -150,7 +150,6 @@ class TestJWTAuthClass:
         tokens = create_jwt_tokens(user)
         user_id = user.id
 
-        # Delete the user
         user.delete()
 
         auth = JWTAuth()
@@ -165,7 +164,6 @@ class TestJWTAuthClass:
         auth = JWTAuth()
         request = MagicMock()
 
-        # Various malformed tokens
         malformed_tokens = [
             "not-a-jwt",
             "header.payload",  # Missing signature

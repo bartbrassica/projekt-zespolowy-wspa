@@ -94,7 +94,6 @@ def get_user_from_auth(auth: Any) -> User:
         try:
             return User.objects.get(id=auth)
         except (User.DoesNotExist, ValueError, ValidationError):
-            # ValueError/ValidationError occurs when UUID format is invalid
             raise HttpError(401, "Invalid authentication")
 
     raise HttpError(401, "Invalid authentication")

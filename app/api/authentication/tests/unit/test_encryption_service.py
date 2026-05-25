@@ -18,7 +18,7 @@ class TestPasswordEncryptionService:
         salt = service.generate_salt()
 
         assert isinstance(salt, bytes)
-        assert len(salt) == 32  # Default salt length
+        assert len(salt) == 32
 
     def test_derive_key(self):
         """Test key derivation from master password."""
@@ -29,7 +29,7 @@ class TestPasswordEncryptionService:
         key = service.derive_key(master_password, salt)
 
         assert isinstance(key, bytes)
-        assert len(key) == 44  # Base64 encoded 32-byte key
+        assert len(key) == 44
 
     def test_derive_key_deterministic(self):
         """Test that same password and salt produce same key."""
@@ -84,7 +84,6 @@ class TestPasswordEncryptionService:
         master_password = "MasterPassword123!"
         salt = service.generate_salt()
 
-        # Invalid base64 string that will cause ValueError
         invalid_encrypted = "not-valid-base64!!!"
 
         decrypted = service.decrypt_password(invalid_encrypted, master_password, salt)
@@ -97,7 +96,6 @@ class TestPasswordEncryptionService:
         master_password = "MasterPassword123!"
         salt = service.generate_salt()
 
-        # Valid base64 but invalid Fernet token
         corrupted_data = base64.b64encode(b"corrupted data").decode("utf-8")
 
         decrypted = service.decrypt_password(corrupted_data, master_password, salt)
@@ -111,7 +109,6 @@ class TestPasswordEncryptionService:
         master_password = "MasterPassword123!"
         salt = service.generate_salt()
 
-        # Make b64decode raise an unexpected exception
         mock_b64decode.side_effect = RuntimeError("Unexpected error")
 
         decrypted = service.decrypt_password("anything", master_password, salt)

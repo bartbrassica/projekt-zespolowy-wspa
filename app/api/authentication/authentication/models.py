@@ -291,11 +291,8 @@ class PasswordFolder(models.Model):
         If the instance was annotated with entry_count in the queryset,
         return that value. Otherwise, calculate it dynamically.
         """
-        # Check if entry_count was added via queryset annotation
-        # Django adds it as a direct attribute when using .annotate()
         if 'entry_count' in self.__dict__:
             return self.__dict__['entry_count']
-        # Otherwise calculate it dynamically
         return self.entries.count()
 
     @entry_count.setter
@@ -335,10 +332,8 @@ class PasswordTag(models.Model):
         If the instance has an annotated entry_count (from queryset annotation),
         use that. Otherwise, calculate it dynamically.
         """
-        # Check if entry_count was set via annotation
         if hasattr(self, '_entry_count'):
             return self._entry_count
-        # Otherwise calculate it
         return self.entries.count()
 
     @entry_count.setter
