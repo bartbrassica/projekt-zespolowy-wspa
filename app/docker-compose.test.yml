@@ -7,7 +7,7 @@ services:
 
   api_test:
     build:
-      context: ./digitalockbox_api
+      context: ./api
       dockerfile: Dockerfile.test
     container_name: digitalockbox_api_test
     environment:
@@ -26,7 +26,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./digitalockbox_api:/app
+      - ./api:/app
       - test_reports:/app/test-reports
       - test_coverage:/app/htmlcov
     command: >

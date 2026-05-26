@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Tag as TagIcon, Plus, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { Tag } from '../../types/password';
 
 interface TagSelectorProps {
@@ -15,8 +16,9 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
   selectedTagIds,
   onChange,
   onCreateTag,
-  label = 'Tags'
+  label
 }) => {
+  const { t } = useTranslation();
   const [isCreating, setIsCreating] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const [newTagColor, setNewTagColor] = useState('#6366f1');
@@ -43,13 +45,13 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
         <TagIcon className="inline h-4 w-4 mr-1" />
-        {label}
+        {label || t('tags.tags')}
       </label>
 
       <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-700">
         {tags.length === 0 && !isCreating && (
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
-            No tags yet. Create one below!
+            {t('tagSelector.noTagsYet')}
           </p>
         )}
 
@@ -86,7 +88,7 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
                 type="text"
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
-                placeholder="Tag name"
+                placeholder={t('tagSelector.tagNamePlaceholder')}
                 className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 autoFocus
                 maxLength={50}
@@ -98,14 +100,14 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
                 value={newTagColor}
                 onChange={(e) => setNewTagColor(e.target.value)}
                 className="h-8 w-8 border border-gray-300 dark:border-gray-600 rounded cursor-pointer"
-                title="Tag color"
+                title={t('tagSelector.tagColor')}
               />
             </div>
             <button
               type="submit"
               className="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm"
             >
-              Add
+              {t('tagSelector.add')}
             </button>
             <button
               type="button"
@@ -127,7 +129,7 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
               className="w-full mt-2 px-2 py-1.5 border border-dashed border-gray-300 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors flex items-center justify-center gap-1"
             >
               <Plus className="h-4 w-4" />
-              Create new tag
+              {t('tagSelector.createNewTag')}
             </button>
           )
         )}

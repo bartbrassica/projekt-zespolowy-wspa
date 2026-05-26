@@ -1,5 +1,6 @@
 import React from 'react';
 import { Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { PasswordModalProps } from '../../types/password';
 import { Checkbox } from '../ui';
 import FolderSelector from './FolderSelector';
@@ -20,6 +21,8 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
   tags = [],
   onCreateTag
 }) => {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -41,13 +44,13 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            {editingEntry ? 'Edit Password' : 'Add New Password'}
+            {editingEntry ? t('passwordModal.editPassword') : t('passwordModal.addPassword')}
           </h2>
 
           <form onSubmit={handleFormSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Name *
+                {t('passwordModal.nameRequired')}
               </label>
               <input
                 type="text"
@@ -60,7 +63,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Website URL
+                {t('passwordModal.websiteUrl')}
               </label>
               <input
                 type="url"
@@ -72,7 +75,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Username/Email
+                {t('passwordModal.usernameEmail')}
               </label>
               <input
                 type="text"
@@ -84,7 +87,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Password *
+                {t('passwordModal.passwordRequired')}
               </label>
               <div className="relative">
                 <input
@@ -93,7 +96,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                   value={formData.password}
                   onChange={handleInputChange('password')}
                   className="w-full px-3 py-2 pr-20 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder={editingEntry ? 'Leave blank to keep current' : ''}
+                  placeholder={editingEntry ? t('passwordModal.leaveBlankToKeep') : ''}
                 />
                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
                   <button
@@ -118,14 +121,14 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
               </div>
               {formData.password && (
                 <p className={`text-xs mt-1 ${passwordStrength.color}`}>
-                  Strength: {passwordStrength.strength}
+                  {t('passwordModal.strength')}: {passwordStrength.strength}
                 </p>
               )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Notes
+                {t('passwordModal.notes')}
               </label>
               <textarea
                 value={formData.notes}
@@ -137,7 +140,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Expiration Date
+                {t('passwordModal.expirationDate')}
               </label>
               <input
                 type="date"
@@ -165,7 +168,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
               name="favorite"
               checked={formData.is_favorite}
               onChange={handleInputChange('is_favorite')}
-              label="Mark as favorite"
+              label={t('passwordModal.favorite')}
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
             />
 
@@ -175,13 +178,13 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
                 onClick={onClose}
                 className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
-                {editingEntry ? 'Update' : 'Create'}
+                {t('passwordModal.submit')}
               </button>
             </div>
           </form>

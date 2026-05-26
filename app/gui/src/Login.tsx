@@ -1,12 +1,14 @@
 import React from 'react';
 import { Mail, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useLoginForm } from './hooks/useLoginForm';
 import { useLogin } from './hooks/useLogin';
-import { InputField, ErrorMessage, LoadingButton, Checkbox } from './components/ui';
+import { InputField, ErrorMessage, LoadingButton, Checkbox, LanguageSwitcher } from './components/ui';
 import type { LoginProps } from './types/auth';
 
 const Login: React.FC<LoginProps> = ({ onSuccess }) => {
+  const { t } = useTranslation();
   const {
     formData,
     showPassword,
@@ -41,8 +43,9 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
       <nav className="relative z-50 w-full">
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-24 py-4 md:py-6 lg:py-8">
           <Link to="/" className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent hover:scale-105 transition-transform">
-            DigitaLockbox
+            {t('common.brandName')}
           </Link>
+          <LanguageSwitcher />
         </div>
       </nav>
 
@@ -51,7 +54,7 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
           <div className="bg-gray-900 bg-opacity-50 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 shadow-2xl">
             <div>
               <h2 className="mt-6 text-center text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                Sign in to your account
+                {t('login.title')}
               </h2>
               <p className="mt-2 text-center text-sm text-gray-400">
             </p>
@@ -63,7 +66,7 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
                   id="email-address"
                   name="email"
                   type="email"
-                  placeholder="Email address"
+                  placeholder={t('login.emailPlaceholder')}
                   value={formData.email}
                   onChange={handleEmailChange}
                   required
@@ -76,7 +79,7 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="Password"
+                  placeholder={t('login.passwordPlaceholder')}
                   value={formData.password}
                   onChange={handlePasswordChange}
                   required
@@ -97,12 +100,12 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
                   name="remember-me"
                   checked={formData.rememberMe}
                   onChange={handleRememberMeChange}
-                  label="Remember me"
+                  label={t('login.rememberMe')}
                 />
 
                 <div className="text-sm">
                   <Link to="/forgot-password" className="font-medium text-purple-400 hover:text-purple-300">
-                    Forgot your password?
+                    {t('login.forgotPasswordLink')}
                   </Link>
                 </div>
               </div>
@@ -112,17 +115,17 @@ const Login: React.FC<LoginProps> = ({ onSuccess }) => {
                   type="submit"
                   isLoading={isLoading}
                   disabled={!isFormValid()}
-                  loadingText="Signing in..."
+                  loadingText={t('login.signingIn')}
                 >
-                  Sign in
+                  {t('login.signInButton')}
                 </LoadingButton>
               </div>
 
               <div className="text-center">
                 <span className="text-sm text-gray-400">
-                  Don't have an account?{' '}
+                  {t('login.noAccount')}{' '}
                   <Link to="/signup" className="font-medium text-purple-400 hover:text-purple-300">
-                    Sign up
+                    {t('login.signUpLink')}
                   </Link>
                 </span>
               </div>

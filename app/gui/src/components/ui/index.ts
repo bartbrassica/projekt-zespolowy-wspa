@@ -7,3 +7,4 @@ export { default as Alert } from './Alert';
 export { default as SearchBar } from './SearchBar';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as ConfirmDialog } from './ConfirmDialog';
+export { default as LanguageSwitcher } from './LanguageSwitcher';

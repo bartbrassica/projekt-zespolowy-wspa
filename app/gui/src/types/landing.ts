@@ -13,8 +13,8 @@ export interface AnimatedStats {
 
 export interface Feature {
   icon: LucideIcon;
-  title: string;
-  desc: string;
+  titleKey: string;
+  descKey: string;
   color: string;
 }
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Share2, X, Copy, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { ShareModalProps, ShareLinkFormData } from '../../types/password';
 import { useShareLinks } from '../../hooks';
 
@@ -9,6 +10,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
   passwordEntry,
   onCreateShareLink
 }) => {
+  const { t } = useTranslation();
   const [masterPassword, setMasterPassword] = useState('');
   const [maxViews, setMaxViews] = useState(1);
   const [expiresInHours, setExpiresInHours] = useState(24);
@@ -73,7 +75,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
           <div className="flex items-center gap-3">
             <Share2 className="h-6 w-6 text-indigo-600" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Share Password
+              {t('shareModal.sharePassword')}
             </h2>
           </div>
           <button
@@ -85,7 +87,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
         </div>
 
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Create a secure share link for: <strong>{passwordEntry.name}</strong>
+          {t('shareModal.sharingPassword')}: <strong>{passwordEntry.name}</strong>
         </p>
 
         {error && (
@@ -99,14 +101,14 @@ const ShareModal: React.FC<ShareModalProps> = ({
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Master Password *
+                  {t('shareModal.masterPassword')} *
                 </label>
                 <input
                   type="password"
                   value={masterPassword}
                   onChange={(e) => setMasterPassword(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Enter your master password"
+                  placeholder={t('shareModal.masterPasswordPlaceholder')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   autoFocus
                 />
@@ -114,7 +116,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Maximum Views
+                  {t('shareModal.maxViews')}
                 </label>
                 <input
                   type="number"
@@ -125,13 +127,13 @@ const ShareModal: React.FC<ShareModalProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  How many times the link can be accessed (1-100)
+                  {t('shareModal.maxViewsHelp')}
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Expires In (hours)
+                  {t('shareModal.expiresIn')} ({t('shareModal.hours')})
                 </label>
                 <input
                   type="number"
@@ -142,23 +144,23 @@ const ShareModal: React.FC<ShareModalProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Link will expire in this many hours (max 168 = 1 week)
+                  {t('shareModal.expiresInHelp')}
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Allowed Email (optional)
+                  {t('shareModal.allowedEmail')}
                 </label>
                 <input
                   type="email"
                   value={allowedEmail}
                   onChange={(e) => setAllowedEmail(e.target.value)}
-                  placeholder="user@example.com"
+                  placeholder={t('shareModal.allowedEmailPlaceholder')}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Restrict access to specific email address
+                  {t('shareModal.requireAuthHelp')}
                 </p>
               </div>
 
@@ -171,7 +173,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                     className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
-                    Require authentication
+                    {t('shareModal.requireAuthentication')}
                   </span>
                 </label>
               </div>
@@ -182,14 +184,14 @@ const ShareModal: React.FC<ShareModalProps> = ({
                 onClick={handleClose}
                 className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={!masterPassword || loading}
                 className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating...' : 'Create Share Link'}
+                {loading ? t('shareModal.creating') : t('shareModal.createLink')}
               </button>
             </div>
           </>
@@ -199,28 +201,28 @@ const ShareModal: React.FC<ShareModalProps> = ({
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
                 <h3 className="font-medium text-green-800 dark:text-green-300">
-                  Share Link Created!
+                  {t('shareModal.linkCreated')}
                 </h3>
               </div>
 
               <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Max Views:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('shareModal.maxViewsLabel')}</span>
                   <span>{createdLink.max_views}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Current Views:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('shareModal.currentViews')}</span>
                   <span>{createdLink.current_views}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Expires:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('shareModal.expires')}</span>
                   <span>{new Date(createdLink.expires_at).toLocaleString()}</span>
                 </div>
               </div>
 
               <div className="mt-4">
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Share URL
+                  {t('shareModal.shareUrl')}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -236,12 +238,12 @@ const ShareModal: React.FC<ShareModalProps> = ({
                     {copiedUrl ? (
                       <>
                         <CheckCircle2 className="h-4 w-4" />
-                        Copied
+                        {t('shareModal.copied')}
                       </>
                     ) : (
                       <>
                         <Copy className="h-4 w-4" />
-                        Copy
+                        {t('shareModal.copy')}
                       </>
                     )}
                   </button>
@@ -253,7 +255,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
               onClick={handleClose}
               className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
-              Done
+              {t('shareModal.done')}
             </button>
           </>
         )}

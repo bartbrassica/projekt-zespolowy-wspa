@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   useMouseTracking,
   useTypingAnimation,
@@ -17,16 +18,17 @@ import {
   Features
 } from './components/landing';
 import { createCrackPasswordHandler, resetCrackedPasswords } from './utils/landingUtils';
-import { FEATURES, HERO_TEXT } from './constants/landingData';
+import { getFeaturesStructure } from './constants/landingData';
 
 const LandingPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
   const [crackedPasswords, setCrackedPasswords] = useState<Record<number, boolean>>({});
 
   // Custom hooks
   const mousePosition = useMouseTracking();
-  const typedText = useTypingAnimation(HERO_TEXT, 100);
+  const typedText = useTypingAnimation(t('landing.heroText'), 100);
   const { isVisible } = useIntersectionObserver();
   const animatedStats = useAnimatedStats(isVisible['stats-section'] || false);
   const { passwordInput, passwordStrength, handlePasswordChange } = usePasswordStrengthDemo();
@@ -85,7 +87,7 @@ const LandingPage: React.FC = () => {
 
       {/* Features */}
       <Features
-        features={FEATURES}
+        features={getFeaturesStructure()}
         hoveredFeature={hoveredFeature}
         onFeatureHover={handleFeatureHover}
       />
@@ -93,7 +95,7 @@ const LandingPage: React.FC = () => {
       {/* Footer */}
       <footer className="relative py-6 sm:py-8 md:py-10 lg:py-12 xl:py-16 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-24 border-t border-gray-800">
         <div className="w-full max-w-[1800px] mx-auto text-center text-gray-400">
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl">&copy; 2025 DigitaLockbox. Your security is our priority.</p>
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl">&copy; 2025 {t('common.brandName')}. {t('landing.footerText')}</p>
         </div>
       </footer>
     </div>

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Lock, CheckCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useChangePassword } from '../../hooks/useChangePassword';
 import { usePasswordStrength } from '../../hooks/usePasswordStrength';
 import { InputField, ErrorMessage, LoadingButton, PasswordStrengthIndicator } from '../ui';
 
 const ChangePasswordForm: React.FC = () => {
+  const { t } = useTranslation();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -40,10 +42,10 @@ const ChangePasswordForm: React.FC = () => {
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
           <Lock className="h-5 w-5 text-indigo-600" />
-          Change Password
+          {t('changePassword.title')}
         </h3>
         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Update your password to keep your account secure
+          {t('changePassword.subtitle')}
         </p>
       </div>
 
@@ -52,10 +54,10 @@ const ChangePasswordForm: React.FC = () => {
           <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-green-800 dark:text-green-200">
-              Password changed successfully!
+              {t('changePassword.successTitle')}
             </p>
             <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-              You will be redirected to login with your new password...
+              {t('changePassword.successMessage')}
             </p>
           </div>
         </div>
@@ -64,13 +66,13 @@ const ChangePasswordForm: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label htmlFor="current-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Current Password
+            {t('changePassword.currentPassword')}
           </label>
           <InputField
             id="current-password"
             name="currentPassword"
             type="password"
-            placeholder="Enter current password"
+            placeholder={t('changePassword.currentPasswordPlaceholder')}
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
@@ -85,13 +87,13 @@ const ChangePasswordForm: React.FC = () => {
 
         <div>
           <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            New Password
+            {t('changePassword.newPassword')}
           </label>
           <InputField
             id="new-password"
             name="newPassword"
             type="password"
-            placeholder="Enter new password"
+            placeholder={t('changePassword.newPasswordPlaceholder')}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
@@ -107,13 +109,13 @@ const ChangePasswordForm: React.FC = () => {
 
         <div>
           <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Confirm New Password
+            {t('changePassword.confirmPassword')}
           </label>
           <InputField
             id="confirm-password"
             name="confirmPassword"
             type="password"
-            placeholder="Confirm new password"
+            placeholder={t('changePassword.confirmPasswordPlaceholder')}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
@@ -125,7 +127,7 @@ const ChangePasswordForm: React.FC = () => {
             className="appearance-none relative block w-full px-10 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
           />
           {confirmPassword && newPassword !== confirmPassword && (
-            <p className="mt-1 text-xs text-red-600 dark:text-red-400">Passwords do not match</p>
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">{t('register.passwordMismatch')}</p>
           )}
         </div>
 
@@ -136,25 +138,13 @@ const ChangePasswordForm: React.FC = () => {
             type="submit"
             isLoading={isLoading}
             disabled={!isFormValid() || success}
-            loadingText="Changing password..."
+            loadingText={t('changePassword.changing')}
             className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
           >
-            Change Password
+            {t('changePassword.changePassword')}
           </LoadingButton>
         </div>
       </form>
-
-      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">
-          Password Requirements:
-        </h4>
-        <ul className="text-xs text-blue-800 dark:text-blue-300 space-y-1">
-          <li>• At least 8 characters long</li>
-          <li>• Contains uppercase and lowercase letters</li>
-          <li>• Contains at least one number</li>
-          <li>• Contains at least one special character</li>
-        </ul>
-      </div>
     </div>
   );
 };

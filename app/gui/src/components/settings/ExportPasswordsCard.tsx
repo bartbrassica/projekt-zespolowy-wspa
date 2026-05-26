@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Download, Lock, CheckCircle, AlertCircle, FileSpreadsheet } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../../services/authApi';
 import { InputField, ErrorMessage, LoadingButton } from '../ui';
 
 const ExportPasswordsCard: React.FC = () => {
+  const { t } = useTranslation();
   const [masterPassword, setMasterPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,7 +16,7 @@ const ExportPasswordsCard: React.FC = () => {
     e.preventDefault();
 
     if (!masterPassword) {
-      setError('Please enter your master password');
+      setError(t('exportPasswords.noMasterPassword'));
       return;
     }
 
@@ -52,7 +54,7 @@ const ExportPasswordsCard: React.FC = () => {
       // Clear success message after 5 seconds
       setTimeout(() => setSuccess(false), 5000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to export passwords');
+      setError(err instanceof Error ? err.message : t('exportPasswords.exportFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -63,10 +65,10 @@ const ExportPasswordsCard: React.FC = () => {
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
           <FileSpreadsheet className="h-5 w-5 text-indigo-600" />
-          Export Passwords
+          {t('exportPasswords.title')}
         </h3>
         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Download all your passwords in XLSX format
+          {t('exportPasswords.subtitle')}
         </p>
       </div>
 
@@ -75,10 +77,10 @@ const ExportPasswordsCard: React.FC = () => {
           <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-green-800 dark:text-green-200">
-              Export successful!
+              {t('exportPasswords.successTitle')}
             </p>
             <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-              Your passwords have been downloaded as an XLSX file.
+              {t('exportPasswords.successMessage')}
             </p>
           </div>
         </div>
@@ -87,13 +89,13 @@ const ExportPasswordsCard: React.FC = () => {
       <form onSubmit={handleExport} className="space-y-5">
         <div>
           <label htmlFor="master-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Master Password
+            {t('common.masterPassword')}
           </label>
           <InputField
             id="master-password"
             name="masterPassword"
             type="password"
-            placeholder="Enter your master password"
+            placeholder={t('common.masterPasswordPlaceholder')}
             value={masterPassword}
             onChange={(e) => setMasterPassword(e.target.value)}
             required
@@ -113,11 +115,11 @@ const ExportPasswordsCard: React.FC = () => {
             type="submit"
             isLoading={isLoading}
             disabled={!masterPassword || success}
-            loadingText="Exporting..."
+            loadingText={t('exportPasswords.exporting')}
             className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2"
           >
             <Download className="h-4 w-4" />
-            Export to XLSX
+            {t('exportPasswords.exportButton')}
           </LoadingButton>
         </div>
       </form>
@@ -127,13 +129,13 @@ const ExportPasswordsCard: React.FC = () => {
           <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
           <div>
             <h4 className="text-sm font-medium text-amber-900 dark:text-amber-200 mb-2">
-              Security Notice:
+              {t('exportPasswords.securityNoticeTitle')}
             </h4>
             <ul className="text-xs text-amber-800 dark:text-amber-300 space-y-1">
-              <li>• Exported file contains all your passwords in plain text</li>
-              <li>• Store the file in a secure location</li>
-              <li>• Delete the file after use if no longer needed</li>
-              <li>• Never share or upload this file to unsecured locations</li>
+              <li>• {t('exportPasswords.securityNotice1')}</li>
+              <li>• {t('exportPasswords.securityNotice2')}</li>
+              <li>• {t('exportPasswords.securityNotice3')}</li>
+              <li>• {t('exportPasswords.securityNotice4')}</li>
             </ul>
           </div>
         </div>

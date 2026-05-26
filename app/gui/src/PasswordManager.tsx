@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { RefreshCw, Key, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { filterPasswords, getPasswordStrength } from './utils/passwordUtils';
-import { Alert, SearchBar, ConfirmDialog } from './components/ui';
+import { Alert, SearchBar, ConfirmDialog, LanguageSwitcher } from './components/ui';
 import { PasswordCard, PasswordModal, MasterPasswordModal, FolderSidebar, ShareModal } from './components/password';
 import {
   usePasswordManager,
@@ -15,6 +16,7 @@ import {
 import type { PasswordEntry, PasswordFormData } from './types/password';
 
 const PasswordManager: React.FC = () => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<PasswordEntry | null>(null);
@@ -147,8 +149,8 @@ const PasswordManager: React.FC = () => {
 
   const handleDelete = (entryId: string) => {
     showConfirm(
-      'Delete Password',
-      'Are you sure you want to delete this password? This action cannot be undone.',
+      t('passwordManager.deletePasswordTitle'),
+      t('passwordManager.deletePasswordMessage'),
       async () => {
         if (!requestMasterPassword({ type: 'delete', data: entryId })) {
           return;
@@ -162,8 +164,8 @@ const PasswordManager: React.FC = () => {
       },
       {
         type: 'danger',
-        confirmText: 'Delete',
-        cancelText: 'Cancel'
+        confirmText: t('common.delete'),
+        cancelText: t('common.cancel')
       }
     );
   };
@@ -240,15 +242,15 @@ const PasswordManager: React.FC = () => {
 
   const handleFolderDelete = (folderId: string) => {
     showConfirm(
-      'Delete Folder',
-      'Are you sure you want to delete this folder? Passwords in this folder will not be deleted.',
+      t('passwordManager.deleteFolderTitle'),
+      t('passwordManager.deleteFolderMessage'),
       async () => {
         await deleteFolder(folderId);
       },
       {
         type: 'warning',
-        confirmText: 'Delete',
-        cancelText: 'Cancel'
+        confirmText: t('common.delete'),
+        cancelText: t('common.cancel')
       }
     );
   };
@@ -273,15 +275,15 @@ const PasswordManager: React.FC = () => {
 
   const handleTagDelete = (tagId: string) => {
     showConfirm(
-      'Delete Tag',
-      'Are you sure you want to delete this tag? Password entries will not be affected.',
+      t('passwordManager.deleteTagTitle'),
+      t('passwordManager.deleteTagMessage'),
       async () => {
         await deleteTag(tagId);
       },
       {
         type: 'warning',
-        confirmText: 'Delete',
-        cancelText: 'Cancel'
+        confirmText: t('common.delete'),
+        cancelText: t('common.cancel')
       }
     );
   };
@@ -335,13 +337,18 @@ const PasswordManager: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <Shield className="h-8 w-8 text-indigo-600" />
-            Password Manager
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Securely manage all your passwords in one place
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                <Shield className="h-8 w-8 text-indigo-600" />
+                {t('passwordManager.title')}
+              </h1>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                {t('passwordManager.subtitle')}
+              </p>
+            </div>
+            <LanguageSwitcher />
+          </div>
         </div>
 
         {/* Alerts */}
@@ -366,10 +373,10 @@ const PasswordManager: React.FC = () => {
           <div className="text-center py-12">
             <Key className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No passwords found
+              {t('passwordManager.noPasswordsFound')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              {searchQuery ? 'Try a different search term' : 'Get started by adding your first password'}
+              {searchQuery ? t('passwordManager.tryDifferentSearch') : t('passwordManager.getStarted')}
             </p>
           </div>
         ) : (

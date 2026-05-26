@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Folder as FolderIcon, Plus, Trash2, X, Tag as TagIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { Folder, Tag } from '../../types/password';
 
 interface FolderSidebarProps {
@@ -27,6 +28,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
   onCreateTag,
   onDeleteTag
 }) => {
+  const { t } = useTranslation();
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [newFolderIcon, setNewFolderIcon] = useState('📁');
@@ -69,12 +71,12 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
           <FolderIcon className="h-6 w-6" />
-          Folders
+          {t('folders.folders')}
         </h2>
         <button
           onClick={() => setIsCreating(true)}
           className="p-1 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded transition-colors"
-          title="New Folder"
+          title={t('folders.newFolder')}
         >
           <Plus className="h-5 w-5" />
         </button>
@@ -90,7 +92,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
         }`}
       >
         <FolderIcon className="h-5 w-5" />
-        <span className="font-medium">All Passwords</span>
+        <span className="font-medium">{t('folders.allPasswords')}</span>
       </button>
 
       {/* New Folder Form */}
@@ -99,7 +101,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
           <div className="flex gap-2">
             <input
               type="text"
-              placeholder="Icon"
+              placeholder={t('folders.icon')}
               value={newFolderIcon}
               onChange={(e) => setNewFolderIcon(e.target.value)}
               className="w-14 px-2 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
@@ -107,7 +109,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
             />
             <input
               type="text"
-              placeholder="Folder name"
+              placeholder={t('folders.folderName')}
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               onKeyDown={(e) => {
@@ -123,7 +125,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
               onClick={handleCreate}
               className="flex-1 px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors font-medium"
             >
-              Create
+              {t('folders.create')}
             </button>
             <button
               onClick={handleCancel}
@@ -157,7 +159,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
             <button
               onClick={() => onDeleteFolder(folder.id)}
               className="opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
-              title="Delete folder"
+              title={t('folders.deleteFolder')}
             >
               <Trash2 className="h-3 w-3" />
             </button>
@@ -167,7 +169,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
 
       {folders.length === 0 && !isCreating && (
         <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-4">
-          No folders yet. Create one to organize your passwords.
+          {t('folders.noFoldersYet')}
         </p>
       )}
 
@@ -179,12 +181,12 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <TagIcon className="h-6 w-6" />
-              Tags
+              {t('tags.tags')}
             </h2>
             <button
               onClick={() => setIsCreatingTag(true)}
               className="p-1 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded transition-colors"
-              title="New Tag"
+              title={t('tags.newTag')}
             >
               <Plus className="h-5 w-5" />
             </button>
@@ -199,11 +201,11 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
                   value={newTagColor}
                   onChange={(e) => setNewTagColor(e.target.value)}
                   className="w-14 h-10 border border-gray-300 dark:border-gray-600 rounded cursor-pointer"
-                  title="Tag color"
+                  title={t('tags.tagColor')}
                 />
                 <input
                   type="text"
-                  placeholder="Tag name"
+                  placeholder={t('tags.tagName')}
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
                   onKeyDown={(e) => {
@@ -220,7 +222,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
                   onClick={handleCreateTag}
                   className="flex-1 px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors font-medium"
                 >
-                  Create
+                  {t('tags.create')}
                 </button>
                 <button
                   onClick={handleCancelTag}
@@ -261,7 +263,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
                     <button
                       onClick={() => onDeleteTag(tag.id)}
                       className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all shadow-sm"
-                      title="Delete tag"
+                      title={t('tags.deleteTag')}
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -273,7 +275,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
 
           {tags.length === 0 && !isCreatingTag && (
             <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-4">
-              No tags yet. Create one to categorize your passwords.
+              {t('tags.noTagsYet')}
             </p>
           )}
         </>

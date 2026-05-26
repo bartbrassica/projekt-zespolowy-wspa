@@ -22,7 +22,7 @@ from .endpoints import auth_router
 from .password_endpoints import password_router
 
 
-api = NinjaAPI(title="auth API", version="1.0.0", csrf=False)
+api = NinjaAPI(title="auth API", version="1.0.0")
 
 api.add_router("", auth_router)
 api.add_router("/passwords", password_router)

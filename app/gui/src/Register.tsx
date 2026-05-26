@@ -1,6 +1,7 @@
 import React from 'react';
 import { Mail, Lock, User, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useRegisterForm } from './hooks/useRegisterForm';
 import { usePasswordStrength } from './hooks/usePasswordStrength';
 import { useRegistration } from './hooks/useRegistration';
@@ -9,8 +10,10 @@ import InputField from './components/ui/InputField';
 import PasswordStrengthIndicator from './components/ui/PasswordStrengthIndicator';
 import ErrorMessage from './components/ui/ErrorMessage';
 import LoadingButton from './components/ui/LoadingButton';
+import LanguageSwitcher from './components/ui/LanguageSwitcher';
 
 const Register: React.FC = () => {
+  const { t } = useTranslation();
   const {
     formData,
     showPassword,
@@ -54,8 +57,9 @@ const Register: React.FC = () => {
       <nav className="relative z-50 w-full">
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-24 py-4 md:py-6 lg:py-8">
           <Link to="/" className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent hover:scale-105 transition-transform">
-            DigitaLockbox
+            {t('common.brandName')}
           </Link>
+          <LanguageSwitcher />
         </div>
       </nav>
 
@@ -64,10 +68,10 @@ const Register: React.FC = () => {
           <div className="bg-gray-900 bg-opacity-50 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 shadow-2xl">
             <div>
               <h2 className="mt-6 text-center text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                Create your account
+                {t('register.title')}
               </h2>
               <p className="mt-2 text-center text-sm text-gray-400">
-                Join DigitaLockbox and secure your digital life
+                {t('register.subtitle')}
               </p>
             </div>
             
@@ -78,7 +82,7 @@ const Register: React.FC = () => {
                   id="first_name"
                   name="first_name"
                   type="text"
-                  placeholder="First name"
+                  placeholder={t('register.firstNamePlaceholder')}
                   value={formData.first_name}
                   onChange={handleChange}
                   required
@@ -89,7 +93,7 @@ const Register: React.FC = () => {
                   id="last_name"
                   name="last_name"
                   type="text"
-                  placeholder="Last name"
+                  placeholder={t('register.lastNamePlaceholder')}
                   value={formData.last_name}
                   onChange={handleChange}
                   required
@@ -102,7 +106,7 @@ const Register: React.FC = () => {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="Email address"
+                placeholder={t('register.emailPlaceholder')}
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -115,7 +119,7 @@ const Register: React.FC = () => {
                 id="phone_number"
                 name="phone_number"
                 type="tel"
-                placeholder="Phone number"
+                placeholder={t('register.phonePlaceholder')}
                 value={formData.phone_number}
                 onChange={handleChange}
                 required
@@ -128,7 +132,7 @@ const Register: React.FC = () => {
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="Password"
+                  placeholder={t('register.passwordPlaceholder')}
                   value={formData.password}
                   onChange={handleChange}
                   required
@@ -146,7 +150,7 @@ const Register: React.FC = () => {
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
-                  placeholder="Confirm password"
+                  placeholder={t('register.confirmPasswordPlaceholder')}
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
@@ -156,7 +160,7 @@ const Register: React.FC = () => {
                   onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
                 />
                 {formData.confirmPassword && !validatePasswordMatch(formData.password, formData.confirmPassword) && (
-                  <p className="text-xs mt-1 text-red-400">Passwords do not match</p>
+                  <p className="text-xs mt-1 text-red-400">{t('register.passwordMismatch')}</p>
                 )}
               </div>
 
@@ -167,17 +171,17 @@ const Register: React.FC = () => {
                   type="submit"
                   isLoading={isLoading}
                   disabled={!isFormValid()}
-                  loadingText="Creating account..."
+                  loadingText={t('register.creatingAccount')}
                 >
-                  Create account
+                  {t('register.createAccountButton')}
                 </LoadingButton>
               </div>
 
               <div className="text-center">
                 <span className="text-sm text-gray-400">
-                  Already have an account?{' '}
+                  {t('register.hasAccount')}{' '}
                   <Link to="/login" className="font-medium text-purple-400 hover:text-purple-300">
-                    Sign in
+                    {t('register.signInLink')}
                   </Link>
                 </span>
               </div>

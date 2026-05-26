@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import i18next from 'i18next';
 import { authApi } from '../services/authApi';
 import type { PasswordEntry, PasswordGeneratorSettings, PasswordFormData, Tag } from '../types/password';
 import { copyToClipboard, createPayloadFromFormData } from '../utils/passwordUtils';
@@ -30,10 +31,10 @@ export const usePasswordManager = () => {
         const data = await response.json();
         setPasswords(data);
       } else {
-        setError('Failed to fetch passwords');
+        setError(i18next.t('hooks.passwordManager.failedToFetch'));
       }
     } catch (err) {
-      setError('Error fetching passwords');
+      setError(i18next.t('hooks.passwordManager.errorFetching'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -50,11 +51,11 @@ export const usePasswordManager = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setSuccess(`Generated ${data.strength} password`);
+        setSuccess(i18next.t('hooks.passwordManager.generatedPassword', { strength: data.strength }));
         return data.password;
       }
     } catch (err) {
-      setError('Failed to generate password: ' + err);
+      setError(i18next.t('hooks.passwordManager.failedToGenerate') + err);
     }
     return null;
   };
@@ -75,18 +76,18 @@ export const usePasswordManager = () => {
       });
 
       if (response.ok) {
-        setSuccess(editingId ? 'Password updated successfully' : 'Password created successfully');
+        setSuccess(editingId ? i18next.t('hooks.passwordManager.passwordUpdated') : i18next.t('hooks.passwordManager.passwordCreated'));
         await fetchPasswords();
         return true;
       } else {
         const errorData = await response.json();
         const errorMessage = typeof errorData.detail === 'string'
           ? errorData.detail
-          : (errorData.detail?.[0]?.msg || 'Operation failed');
+          : (errorData.detail?.[0]?.msg || i18next.t('hooks.passwordManager.operationFailed'));
         setError(errorMessage);
       }
     } catch (err) {
-      setError('An error occurred');
+      setError(i18next.t('hooks.passwordManager.errorOccurred'));
       console.error(err);
     }
     return false;
@@ -101,14 +102,14 @@ export const usePasswordManager = () => {
       });
 
       if (response.ok) {
-        setSuccess('Password deleted successfully');
+        setSuccess(i18next.t('hooks.passwordManager.passwordDeleted'));
         await fetchPasswords();
         return true;
       } else {
-        setError('Failed to delete password');
+        setError(i18next.t('hooks.passwordManager.failedToDelete'));
       }
     } catch (err) {
-      setError('Delete operation failed: ' + err);
+      setError(i18next.t('hooks.passwordManager.deleteOperationFailed') + err);
     }
     return false;
   };
@@ -144,10 +145,10 @@ export const usePasswordManager = () => {
         const data = await response.json();
         return data.password;
       } else {
-        setError('Failed to decrypt password. Check your master password.');
+        setError(i18next.t('hooks.passwordManager.failedToDecrypt'));
       }
     } catch (err) {
-      setError('Decryption error: ' + err);
+      setError(i18next.t('hooks.passwordManager.decryptionError') + err);
     }
     return null;
   };
@@ -155,9 +156,9 @@ export const usePasswordManager = () => {
   const copyPasswordToClipboard = async (password: string): Promise<void> => {
     try {
       await copyToClipboard(password);
-      setSuccess('Password copied to clipboard');
+      setSuccess(i18next.t('hooks.passwordManager.passwordCopied'));
     } catch {
-      setError('Failed to copy password');
+      setError(i18next.t('hooks.passwordManager.failedToCopy'));
     }
   };
 

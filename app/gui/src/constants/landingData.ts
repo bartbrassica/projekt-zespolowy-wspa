@@ -1,25 +1,24 @@
 import { Lock, Zap, Globe } from 'lucide-react';
 import type { Feature } from '../types/landing';
 
-export const FEATURES: Feature[] = [
+// Features structure without text (text will come from translations)
+export const getFeaturesStructure = (): Feature[] => [
   {
     icon: Lock,
-    title: "Military-Grade Encryption",
-    desc: "PBKDF2 + AES-128 encryption keeps your data secure",
+    titleKey: "landing.militaryGradeEncryption",
+    descKey: "landing.militaryGradeEncryptionDesc",
     color: "from-purple-500 to-purple-600"
   },
   {
     icon: Zap,
-    title: "Instant Access",
-    desc: "One click to fill passwords anywhere",
+    titleKey: "landing.instantAccess",
+    descKey: "landing.instantAccessDesc",
     color: "from-blue-500 to-blue-600"
   },
   {
     icon: Globe,
-    title: "Cross-Platform Sync",
-    desc: "Access your vault from any device",
+    titleKey: "landing.crossPlatformSync",
+    descKey: "landing.crossPlatformSyncDesc",
     color: "from-cyan-500 to-cyan-600"
   }
 ];
-
-export const HERO_TEXT = "Your Guardian";

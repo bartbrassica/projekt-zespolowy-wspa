@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import i18next from 'i18next';
 import type { ChangePasswordRequest } from '../types/password-reset';
 import { validateNewPassword, passwordsMatch } from '../utils/passwordResetUtils';
 import { authApi } from '../services/authApi';
@@ -29,14 +30,14 @@ export const useChangePassword = () => {
 
     // Check passwords match
     if (!passwordsMatch(newPassword, confirmPassword)) {
-      setError('Passwords do not match');
+      setError(i18next.t('hooks.changePassword.passwordsDoNotMatch'));
       setIsLoading(false);
       return false;
     }
 
     // Check new password is different from current
     if (currentPassword === newPassword) {
-      setError('New password must be different from current password');
+      setError(i18next.t('hooks.changePassword.newPasswordMustBeDifferent'));
       setIsLoading(false);
       return false;
     }
@@ -44,7 +45,7 @@ export const useChangePassword = () => {
     try {
       const token = authApi.getAccessToken();
       if (!token) {
-        setError('Authentication required');
+        setError(i18next.t('hooks.changePassword.authenticationRequired'));
         navigate('/login');
         return false;
       }
@@ -71,16 +72,16 @@ export const useChangePassword = () => {
           localStorage.clear();
           sessionStorage.clear();
           navigate('/login', {
-            state: { message: 'Password changed successfully! Please sign in with your new password.' },
+            state: { message: i18next.t('hooks.changePassword.passwordChangedSuccess') },
           });
         }, 2000);
         return true;
       } else {
-        setError(data.message || 'Failed to change password');
+        setError(data.message || i18next.t('hooks.changePassword.failedToChange'));
         return false;
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError(i18next.t('hooks.changePassword.errorOccurred'));
       return false;
     } finally {
       setIsLoading(false);

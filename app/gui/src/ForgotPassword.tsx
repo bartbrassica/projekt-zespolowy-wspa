@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useForgotPassword } from './hooks/useForgotPassword';
 import { validateEmail } from './utils/passwordResetUtils';
-import { InputField, ErrorMessage, LoadingButton } from './components/ui';
+import { InputField, ErrorMessage, LoadingButton, LanguageSwitcher } from './components/ui';
 
 const ForgotPassword: React.FC = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const { isLoading, error, success, requestPasswordReset } = useForgotPassword();
 
@@ -40,8 +42,9 @@ const ForgotPassword: React.FC = () => {
       <nav className="relative z-50 w-full">
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-24 py-4 md:py-6 lg:py-8">
           <Link to="/" className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent hover:scale-105 transition-transform">
-            DigitaLockbox
+            {t('common.brandName')}
           </Link>
+          <LanguageSwitcher />
         </div>
       </nav>
 
@@ -49,20 +52,20 @@ const ForgotPassword: React.FC = () => {
         <div className="w-full max-w-md px-4 sm:px-6 lg:px-8">
           <div className="bg-gray-900 bg-opacity-50 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 shadow-2xl">
             {/* Back to Login Link */}
-            <Link 
-              to="/login" 
+            <Link
+              to="/login"
               className="inline-flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-6"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Login
+              {t('forgotPassword.backToLogin')}
             </Link>
 
             <div>
               <h2 className="text-center text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                Forgot Password?
+                {t('forgotPassword.title')}
               </h2>
               <p className="mt-2 text-center text-sm text-gray-400">
-                Enter your email address and we'll send you a link to reset your password
+                {t('forgotPassword.subtitle')}
               </p>
             </div>
 
@@ -72,19 +75,19 @@ const ForgotPassword: React.FC = () => {
                   <div className="rounded-full bg-green-500/20 p-3">
                     <CheckCircle className="h-12 w-12 text-green-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white">Check your email</h3>
+                  <h3 className="text-xl font-semibold text-white">{t('forgotPassword.checkEmail')}</h3>
                   <p className="text-gray-400">
-                    If an account exists for <span className="text-white font-medium">{email}</span>, 
-                    you will receive a password reset link shortly.
+                    {t('forgotPassword.emailSentMessage')} <span className="text-white font-medium">{email}</span>,
+                    {t('forgotPassword.emailSentMessage2')}
                   </p>
                   <p className="text-sm text-gray-500">
-                    The link will expire in 24 hours. If you don't see the email, check your spam folder.
+                    {t('forgotPassword.expireNotice')}
                   </p>
-                  <Link 
+                  <Link
                     to="/login"
                     className="mt-4 text-purple-400 hover:text-purple-300 font-medium"
                   >
-                    Return to login
+                    {t('forgotPassword.returnToLogin')}
                   </Link>
                 </div>
               </div>
@@ -95,7 +98,7 @@ const ForgotPassword: React.FC = () => {
                     id="email-address"
                     name="email"
                     type="email"
-                    placeholder="Email address"
+                    placeholder={t('forgotPassword.emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -104,7 +107,7 @@ const ForgotPassword: React.FC = () => {
                     className="appearance-none relative block w-full px-10 py-3 bg-black bg-opacity-50 border border-gray-700 placeholder-gray-500 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
                   />
                   {email && !validateEmail(email) && (
-                    <p className="mt-1 text-xs text-red-400">Please enter a valid email address</p>
+                    <p className="mt-1 text-xs text-red-400">{t('forgotPassword.invalidEmail')}</p>
                   )}
                 </div>
 
@@ -115,17 +118,17 @@ const ForgotPassword: React.FC = () => {
                     type="submit"
                     isLoading={isLoading}
                     disabled={!isFormValid()}
-                    loadingText="Sending reset link..."
+                    loadingText={t('forgotPassword.sendingResetLink')}
                   >
-                    Send Reset Link
+                    {t('forgotPassword.sendResetLink')}
                   </LoadingButton>
                 </div>
 
                 <div className="text-center">
                   <span className="text-sm text-gray-400">
-                    Remember your password?{' '}
+                    {t('forgotPassword.rememberPassword')}{' '}
                     <Link to="/login" className="font-medium text-purple-400 hover:text-purple-300">
-                      Sign in
+                      {t('login.signInButton')}
                     </Link>
                   </span>
                 </div>

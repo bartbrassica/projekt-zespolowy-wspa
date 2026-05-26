@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import i18next from 'i18next';
 import type { ResetPasswordRequest } from '../types/password-reset';
 import { validateNewPassword, passwordsMatch } from '../utils/passwordResetUtils';
 
@@ -26,7 +27,7 @@ export const useResetPassword = () => {
 
     // Check passwords match
     if (!passwordsMatch(newPassword, confirmPassword)) {
-      setError('Passwords do not match');
+      setError(i18next.t('hooks.resetPassword.passwordsDoNotMatch'));
       setIsLoading(false);
       return false;
     }
@@ -50,16 +51,16 @@ export const useResetPassword = () => {
         // Redirect to login with success message
         setTimeout(() => {
           navigate('/login', {
-            state: { message: 'Password reset successfully! Please sign in.' },
+            state: { message: i18next.t('hooks.resetPassword.passwordResetSuccess') },
           });
         }, 2000);
         return true;
       } else {
-        setError(data.message || 'Failed to reset password');
+        setError(data.message || i18next.t('hooks.resetPassword.failedToReset'));
         return false;
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError(i18next.t('hooks.resetPassword.errorOccurred'));
       return false;
     } finally {
       setIsLoading(false);

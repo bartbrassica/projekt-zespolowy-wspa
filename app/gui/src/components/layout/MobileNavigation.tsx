@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { NavigationProps } from '../../types/layout';
 
 const MobileNavigation: React.FC<NavigationProps> = ({ items, currentPath }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="sm:hidden">
       <div className="pt-2 pb-3 space-y-1">
@@ -21,7 +24,7 @@ const MobileNavigation: React.FC<NavigationProps> = ({ items, currentPath }) => 
             >
               <div className="flex items-center">
                 <Icon className="h-4 w-4 mr-2" />
-                {item.name}
+                {t(item.name)}
               </div>
             </Link>
           );

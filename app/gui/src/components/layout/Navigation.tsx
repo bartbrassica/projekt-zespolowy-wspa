@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { NavigationProps } from '../../types/layout';
 
 const Navigation: React.FC<NavigationProps> = ({ items, currentPath }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
       {items.map((item) => {
@@ -19,7 +22,7 @@ const Navigation: React.FC<NavigationProps> = ({ items, currentPath }) => {
             }`}
           >
             <Icon className="h-4 w-4 mr-2" />
-            {item.name}
+            {t(item.name)}
           </Link>
         );
       })}

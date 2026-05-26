@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import i18next from 'i18next';
 import type { VerificationState, VerificationResponse } from '../types/verification';
 
 export const useEmailVerification = (token: string | null) => {
@@ -24,18 +25,18 @@ export const useEmailVerification = (token: string | null) => {
       if (response.ok) {
         return {
           success: true,
-          message: data.message || 'Your email has been successfully verified!'
+          message: data.message || i18next.t('hooks.emailVerification.emailVerifiedSuccess')
         };
       } else {
         return {
           success: false,
-          message: data.message || 'Verification failed'
+          message: data.message || i18next.t('hooks.emailVerification.verificationFailed')
         };
       }
     } catch {
       return {
         success: false,
-        message: 'An error occurred during verification'
+        message: i18next.t('hooks.emailVerification.errorDuringVerification')
       };
     }
   };
@@ -44,7 +45,7 @@ export const useEmailVerification = (token: string | null) => {
     if (!token) {
       setVerificationState({
         status: 'error',
-        message: 'No verification token provided'
+        message: i18next.t('hooks.emailVerification.noTokenProvided')
       });
       return;
     }
@@ -59,19 +60,19 @@ export const useEmailVerification = (token: string | null) => {
     if (result.success) {
       setVerificationState({
         status: 'success',
-        message: result.message || 'Email verified successfully!'
+        message: result.message || i18next.t('hooks.emailVerification.emailVerified')
       });
 
       // Redirect to login after 3 seconds
       setTimeout(() => {
         navigate('/login', {
-          state: { message: 'Email verified! Please sign in to continue.' }
+          state: { message: i18next.t('hooks.emailVerification.emailVerifiedSignIn') }
         });
       }, 3000);
     } else {
       setVerificationState({
         status: 'error',
-        message: result.message || 'Verification failed'
+        message: result.message || i18next.t('hooks.emailVerification.verificationFailed')
       });
     }
   }, [token, navigate]);

@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Lock, CheckCircle, AlertCircle, FileSpreadsheet } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../../services/authApi';
 import { InputField, ErrorMessage, LoadingButton } from '../ui';
 
 const ImportPasswordsCard: React.FC = () => {
+  const { t } = useTranslation();
   const [masterPassword, setMasterPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +22,7 @@ const ImportPasswordsCard: React.FC = () => {
       const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
 
       if (!validExtensions.includes(fileExtension)) {
-        setError('Please select a valid file (.xlsx, .csv, or .json)');
+        setError(t('importPasswords.invalidFileType'));
         setSelectedFile(null);
         return;
       }
@@ -35,12 +37,12 @@ const ImportPasswordsCard: React.FC = () => {
     e.preventDefault();
 
     if (!selectedFile) {
-      setError('Please select a file to import');
+      setError(t('importPasswords.noFileSelected'));
       return;
     }
 
     if (!masterPassword) {
-      setError('Please enter your master password');
+      setError(t('importPasswords.noMasterPassword'));
       return;
     }
 
@@ -103,10 +105,10 @@ const ImportPasswordsCard: React.FC = () => {
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
           <FileSpreadsheet className="h-5 w-5 text-indigo-600" />
-          Import Passwords
+          {t('importPasswords.title')}
         </h3>
         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Upload a file to import passwords (XLSX, CSV, or JSON format)
+          {t('importPasswords.subtitle')}
         </p>
       </div>
 
@@ -124,7 +126,7 @@ const ImportPasswordsCard: React.FC = () => {
       <form onSubmit={handleImport} className="space-y-5">
         <div>
           <label htmlFor="file-upload" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Select File
+            {t('importPasswords.selectFile')}
           </label>
           <div className="mt-1 flex items-center gap-3">
             <input
@@ -141,7 +143,7 @@ const ImportPasswordsCard: React.FC = () => {
               className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 flex items-center gap-2"
             >
               <Upload className="h-4 w-4" />
-              Choose File
+              {t('importPasswords.selectFile')}
             </button>
             {selectedFile && (
               <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -150,19 +152,19 @@ const ImportPasswordsCard: React.FC = () => {
             )}
           </div>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Supported formats: XLSX, CSV, JSON
+            {t('importPasswords.fileFormatText')}
           </p>
         </div>
 
         <div>
           <label htmlFor="master-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Master Password
+            {t('common.masterPassword')}
           </label>
           <InputField
             id="master-password"
             name="masterPassword"
             type="password"
-            placeholder="Enter your master password"
+            placeholder={t('common.masterPasswordPlaceholder')}
             value={masterPassword}
             onChange={(e) => setMasterPassword(e.target.value)}
             required
@@ -182,11 +184,11 @@ const ImportPasswordsCard: React.FC = () => {
             type="submit"
             isLoading={isLoading}
             disabled={!selectedFile || !masterPassword || isLoading}
-            loadingText="Importing..."
+            loadingText={t('importPasswords.importing')}
             className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2"
           >
             <Upload className="h-4 w-4" />
-            Import Passwords
+            {t('importPasswords.importButton')}
           </LoadingButton>
         </div>
       </form>
@@ -196,13 +198,13 @@ const ImportPasswordsCard: React.FC = () => {
           <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
           <div>
             <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">
-              Import Guidelines:
+              {t('importPasswords.importGuidelinesTitle')}
             </h4>
             <ul className="text-xs text-blue-800 dark:text-blue-300 space-y-1">
-              <li>• File must contain 'Name' and 'Password' columns</li>
-              <li>• Optional columns: Site, Username, Notes</li>
-              <li>• Duplicate entries will be skipped</li>
-              <li>• Passwords will be encrypted with your master password</li>
+              <li>• {t('importPasswords.guideline1')}</li>
+              <li>• {t('importPasswords.guideline2')}</li>
+              <li>• {t('importPasswords.guideline3')}</li>
+              <li>• {t('importPasswords.guideline4')}</li>
             </ul>
           </div>
         </div>

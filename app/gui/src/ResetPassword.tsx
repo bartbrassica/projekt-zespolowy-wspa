@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Lock, CheckCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useResetPassword } from './hooks/useResetPassword';
 import { usePasswordStrength } from './hooks/usePasswordStrength';
 import { extractResetToken } from './utils/passwordResetUtils';
-import { InputField, ErrorMessage, LoadingButton, PasswordStrengthIndicator } from './components/ui';
+import { InputField, ErrorMessage, LoadingButton, PasswordStrengthIndicator, LanguageSwitcher } from './components/ui';
 
 const ResetPassword: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const token = extractResetToken(searchParams);
   
@@ -48,15 +50,15 @@ const ResetPassword: React.FC = () => {
     return (
       <div className="min-h-screen bg-black text-white relative overflow-hidden flex items-center justify-center">
         <div className="bg-gray-900 bg-opacity-50 backdrop-blur-xl rounded-2xl p-8 border border-gray-800 shadow-2xl max-w-md">
-          <h2 className="text-2xl font-bold text-red-400 mb-4">Invalid Reset Link</h2>
+          <h2 className="text-2xl font-bold text-red-400 mb-4">{t('resetPassword.invalidLinkTitle')}</h2>
           <p className="text-gray-400 mb-6">
-            This password reset link is invalid or has expired. Please request a new password reset.
+            {t('resetPassword.invalidLinkMessage')}
           </p>
-          <Link 
+          <Link
             to="/forgot-password"
             className="inline-block w-full text-center px-4 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-md font-semibold hover:scale-105 transition-all"
           >
-            Request New Reset Link
+            {t('resetPassword.requestNewLink')}
           </Link>
         </div>
       </div>
@@ -80,8 +82,9 @@ const ResetPassword: React.FC = () => {
       <nav className="relative z-50 w-full">
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-24 py-4 md:py-6 lg:py-8">
           <Link to="/" className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent hover:scale-105 transition-transform">
-            DigitaLockbox
+            {t('common.brandName')}
           </Link>
+          <LanguageSwitcher />
         </div>
       </nav>
 
@@ -93,19 +96,19 @@ const ResetPassword: React.FC = () => {
                 <div className="rounded-full bg-green-500/20 p-3">
                   <CheckCircle className="h-12 w-12 text-green-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-white">Password Reset Successfully!</h3>
+                <h3 className="text-xl font-semibold text-white">{t('resetPassword.successTitle')}</h3>
                 <p className="text-gray-400">
-                  Your password has been updated. Redirecting to login...
+                  {t('resetPassword.successMessage')}
                 </p>
               </div>
             ) : (
               <>
                 <div>
                   <h2 className="text-center text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                    Reset Your Password
+                    {t('resetPassword.title')}
                   </h2>
                   <p className="mt-2 text-center text-sm text-gray-400">
-                    Enter your new password below
+                    {t('resetPassword.subtitle')}
                   </p>
                 </div>
 
@@ -115,7 +118,7 @@ const ResetPassword: React.FC = () => {
                       id="new-password"
                       name="newPassword"
                       type="password"
-                      placeholder="New password"
+                      placeholder={t('resetPassword.newPasswordPlaceholder')}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
@@ -134,7 +137,7 @@ const ResetPassword: React.FC = () => {
                       id="confirm-password"
                       name="confirmPassword"
                       type="password"
-                      placeholder="Confirm new password"
+                      placeholder={t('resetPassword.confirmPasswordPlaceholder')}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
@@ -146,7 +149,7 @@ const ResetPassword: React.FC = () => {
                       className="appearance-none relative block w-full px-10 py-3 bg-black bg-opacity-50 border border-gray-700 placeholder-gray-500 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
                     />
                     {confirmPassword && newPassword !== confirmPassword && (
-                      <p className="mt-1 text-xs text-red-400">Passwords do not match</p>
+                      <p className="mt-1 text-xs text-red-400">{t('register.passwordMismatch')}</p>
                     )}
                   </div>
 
@@ -157,17 +160,17 @@ const ResetPassword: React.FC = () => {
                       type="submit"
                       isLoading={isLoading}
                       disabled={!isFormValid()}
-                      loadingText="Resetting password..."
+                      loadingText={t('resetPassword.resettingPassword')}
                     >
-                      Reset Password
+                      {t('resetPassword.resetPasswordButton')}
                     </LoadingButton>
                   </div>
 
                   <div className="text-center">
                     <span className="text-sm text-gray-400">
-                      Remember your password?{' '}
+                      {t('resetPassword.rememberPassword')}{' '}
                       <Link to="/login" className="font-medium text-purple-400 hover:text-purple-300">
-                        Sign in
+                        {t('login.signInButton')}
                       </Link>
                     </span>
                   </div>

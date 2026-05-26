@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import i18next from 'i18next';
 import type { RegisterFormData } from '../types/auth';
 
 export const useRegistration = () => {
@@ -28,14 +29,14 @@ export const useRegistration = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Registration failed');
+        throw new Error(errorData.message || i18next.t('hooks.registration.registrationFailed'));
       }
 
       navigate('/login', {
-        state: { message: 'Registration successful! Please sign in.' }
+        state: { message: i18next.t('hooks.registration.registrationSuccess') }
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during registration');
+      setError(err instanceof Error ? err.message : i18next.t('hooks.registration.errorDuringRegistration'));
     } finally {
       setIsLoading(false);
     }
