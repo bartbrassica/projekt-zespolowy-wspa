@@ -1,6 +1,6 @@
 # DigitalLockbox – Secure Password Manager
 
-Webowa aplikacja do bezpiecznego zarządzania hasłami z szyfrowaniem end-to-end. Zbudowana jako projekt zespołowy.
+Webowa aplikacja do bezpiecznego zarządzania hasłami. Zbudowana jako projekt zespołowy.
 
 ## Dokumentacja
 
