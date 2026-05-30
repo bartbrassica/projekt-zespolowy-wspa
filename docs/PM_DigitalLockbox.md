@@ -1,4 +1,3 @@
-
 # Dokumentacja Project Managera
 # DigitalLockbox – Secure Password Manager
 
@@ -10,7 +9,7 @@
 |---|---|
 | **Nazwa projektu** | DigitalLockbox |
 | **Typ** | Aplikacja webowa (SPA) |
-| **Czas realizacji** | 20.04.2026 – 31.05.2026 (~6 tygodni) |
+| **Czas realizacji** | 20.04.2026 – 27.05.2026 (~6 tygodni) |
 | **Repozytorium** | https://github.com/bartbrassica/projekt-zespolowy-wspa |
 | **Metodyka** | Agile / Scrum (Planning + Daily Stand-up + Retrospektywa) |
 
@@ -626,7 +625,7 @@ Scenario: Kopiowanie z auto-czyszczeniem
 ---
 
 ### Sprint 8 – Finalizacja i dokumentacja
-**Okres:** 28.05.2026 – 31.05.2026 (4 dni) | **Pula:** 18 SP
+**Okres:** 24.05.2026 – 27.05.2026 (4 dni) | **Pula:** 18 SP
 
 ---
 
@@ -656,17 +655,17 @@ Scenario: Kopiowanie z auto-czyszczeniem
 
 | Dzień | Co zrobiono? | Co planujemy? | Blokery? |
 |---|---|---|---|
-| 28.05 (czw) | Sprint planning, przegląd backlogu | Bartek: endpointy folderów (TDD); Amanda: dokumentacja | Brak |
-| 29.05 (pt) | Foldery (API + testy) gotowe | Bartek: tagi (API + TDD); Agata: testy folderów | Brak |
-| 30.05 (sob) | Tagi gotowe; filtrowanie po folderze/tagu | Bartek: GUI foldery/tagi; Agata: testy tagów | Brak |
-| 31.05 (nd) | GUI gotowe; indeksy dodane; refaktoryzacja | Agata: finalne testy E2E; Amanda: finalizacja docs; retro | Brak |
+| 24.05 (nd) | Sprint planning, przegląd backlogu | Bartek: endpointy folderów (TDD); Amanda: dokumentacja | Brak |
+| 25.05 (pon) | Foldery (API + testy) gotowe | Bartek: tagi (API + TDD); Agata: testy folderów | Brak |
+| 26.05 (wt) | Tagi gotowe; filtrowanie po folderze/tagu | Bartek: GUI foldery/tagi; Agata: testy tagów | Brak |
+| 27.05 (śr) | GUI gotowe; indeksy dodane; refaktoryzacja | Agata: finalne testy E2E; Amanda: finalizacja docs; retro | Brak |
 
 ---
 
 #### 🔄 Retrospektywa
 
 **Co poszło dobrze:**
-- Projekt zrealizowany w terminie (31.05.2026) zgodnie z harmonogramem
+- Projekt zrealizowany w terminie (27.05.2026) zgodnie z harmonogramem
 - TDD przy folderach i tagach — testy pisane równolegle z kodem, zero regresji
 - Dobra współpraca Agaty i Bartka przy testach integracyjnych
 
@@ -692,9 +691,9 @@ Scenario: Kopiowanie z auto-czyszczeniem
 | Sprint 5 | Dopracowanie i bezpieczeństwo | 18.05 – 22.05.2026 | 5 | 16 |
 | Sprint 6 | Dockeryzacja i wdrożenie | 23.05 – 27.05.2026 | 5 | 11 |
 | Sprint 7 | Testy automatyczne (100% coverage) | 23.05 – 27.05.2026 | 5 (równolegle) | 21 |
-| Sprint 8 | Finalizacja i dokumentacja | 28.05 – 31.05.2026 | 4 | 18 |
+| Sprint 8 | Finalizacja i dokumentacja | 24.05 – 27.05.2026 | 4 | 18 |
 
-**Łączny czas realizacji: ~6 tygodni (20.04.2026 – 31.05.2026)**
+**Łączny czas realizacji: ~6 tygodni (20.04.2026 – 27.05.2026)**
 **Łączna liczba Story Points: 156 SP**
 
 ---
@@ -707,9 +706,9 @@ Scenario: Kopiowanie z auto-czyszczeniem
 | R-2 | Problemy z integracją frontend–backend (CORS, kontrakt API) | Niskie | Średni | Swagger dokumentowany przed startem implementacji frontendu |
 | R-3 | Niedostateczne pokrycie testami | Niskie | Wysoki | Dedykowany Sprint 7, TDD wdrożone od Sprintu 8 |
 | R-4 | Problemy z konfiguracją Docker | Niskie | Średni | Dedykowany Sprint 6, `.env.example` w repozytorium |
-| R-5 | Przekroczenie terminu (31.05) | Niskie | Wysoki | Bufor 4 dni w Sprincie 8, priorytetyzacja MoSCoW |
+| R-5 | Przekroczenie terminu (27.05) | Niskie | Wysoki | Bufor 4 dni w Sprincie 8, priorytetyzacja MoSCoW |
 
 ---
 
 *Dokument przygotowany przez: Amanda Krasnowska-Szymańska (Project Manager)*
-*Ostatnia aktualizacja: 31.05.2026*
+*Ostatnia aktualizacja: 27.05.2026*
